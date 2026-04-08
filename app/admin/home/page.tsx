@@ -24,15 +24,16 @@ export default async function AdminHomePage() {
 
       return (
         <section className="space-y-4">
-          <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h1 className="text-xl font-semibold text-ink">Home</h1>
-            <p className="text-sm text-slate-600">
+          <header className="admin-panel">
+            <p className="admin-kicker">Overview</p>
+            <h1 className="admin-title mt-3">Home</h1>
+            <p className="admin-subtitle mt-3">
               Accesos rápidos para gestión global de empresas, encuestas y usuarios.
             </p>
           </header>
 
           <div className="grid gap-3 md:grid-cols-3">
-            <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <article className="admin-panel-soft">
               <p className="text-xs uppercase tracking-wide text-slate-500">Empresas</p>
               <p className="mt-1 text-2xl font-semibold text-ink">
                 {companies.pagination.total}
@@ -45,7 +46,7 @@ export default async function AdminHomePage() {
               </Link>
             </article>
 
-            <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <article className="admin-panel-soft">
               <p className="text-xs uppercase tracking-wide text-slate-500">Usuarios</p>
               <p className="mt-1 text-2xl font-semibold text-ink">{users.pagination.total}</p>
               <Link
@@ -56,7 +57,7 @@ export default async function AdminHomePage() {
               </Link>
             </article>
 
-            <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <article className="admin-panel-soft">
               <p className="text-xs uppercase tracking-wide text-slate-500">Encuestas</p>
               <p className="mt-1 text-2xl font-semibold text-ink">{surveys.pagination.total}</p>
               <Link
@@ -68,30 +69,30 @@ export default async function AdminHomePage() {
             </article>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-base font-semibold text-ink">Quick actions</h2>
+          <div className="admin-panel">
+            <h2 className="admin-title text-[1rem] sm:text-[1.15rem]">Quick actions</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               <Link
                 href="/admin/companies/new"
-                className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark"
+                className="admin-button-primary"
               >
                 Crear empresa
               </Link>
               <Link
                 href="/admin/companies"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                className="admin-button-secondary"
               >
                 Gestionar empresas
               </Link>
               <Link
                 href="/admin/surveys"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                className="admin-button-secondary"
               >
                 Revisar encuestas
               </Link>
               <Link
                 href="/admin/users"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                className="admin-button-secondary"
               >
                 Revisar usuarios
               </Link>
@@ -101,9 +102,9 @@ export default async function AdminHomePage() {
       );
     } catch (error) {
       return (
-        <section className="rounded-xl border border-rose-200 bg-white p-5 shadow-sm">
-          <h1 className="text-lg font-semibold text-ink">Home</h1>
-          <p className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+        <section className="admin-panel">
+          <h1 className="admin-title text-[1rem] sm:text-[1.15rem]">Home</h1>
+          <p className="admin-banner-error mt-3">
             {extractErrorMessage(error)}
           </p>
         </section>
@@ -113,9 +114,9 @@ export default async function AdminHomePage() {
 
   if (!session.user.companySlug) {
     return (
-      <section className="rounded-xl border border-amber-300 bg-white p-5 shadow-sm">
-        <h1 className="text-lg font-semibold text-ink">Home</h1>
-        <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+      <section className="admin-panel">
+        <h1 className="admin-title text-[1rem] sm:text-[1.15rem]">Home</h1>
+        <p className="admin-banner-warning mt-3">
           Tu cuenta no tiene empresa asignada todavía.
         </p>
       </section>
@@ -131,38 +132,39 @@ export default async function AdminHomePage() {
 
     return (
       <section className="space-y-4">
-        <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h1 className="text-xl font-semibold text-ink">Home</h1>
-          <p className="text-sm text-slate-600">Resumen de tu empresa: {company.name}</p>
+        <header className="admin-panel">
+          <p className="admin-kicker">Mi empresa</p>
+          <h1 className="admin-title mt-3">Home</h1>
+          <p className="admin-subtitle mt-3">Resumen de tu empresa: {company.name}</p>
         </header>
 
         <div className="grid gap-3 md:grid-cols-3">
-          <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <article className="admin-panel-soft">
             <p className="text-xs uppercase tracking-wide text-slate-500">Empresa</p>
             <p className="mt-1 text-lg font-semibold text-ink">{company.name}</p>
           </article>
-          <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <article className="admin-panel-soft">
             <p className="text-xs uppercase tracking-wide text-slate-500">Usuarios</p>
             <p className="mt-1 text-2xl font-semibold text-ink">{usersData.rows.length}</p>
           </article>
-          <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <article className="admin-panel-soft">
             <p className="text-xs uppercase tracking-wide text-slate-500">Encuestas</p>
             <p className="mt-1 text-2xl font-semibold text-ink">{surveysData.rows.length}</p>
           </article>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-base font-semibold text-ink">Quick actions</h2>
+        <div className="admin-panel">
+          <h2 className="admin-title text-[1rem] sm:text-[1.15rem]">Quick actions</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             <Link
               href={`/admin/companies/${company.slug}`}
-              className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark"
+              className="admin-button-primary"
             >
               Ver empresa
             </Link>
             <Link
               href={`/admin/companies/${company.slug}/surveys`}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="admin-button-secondary"
             >
               Ver encuestas
             </Link>
@@ -172,9 +174,9 @@ export default async function AdminHomePage() {
     );
   } catch (error) {
     return (
-      <section className="rounded-xl border border-rose-200 bg-white p-5 shadow-sm">
-        <h1 className="text-lg font-semibold text-ink">Home</h1>
-        <p className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+      <section className="admin-panel">
+        <h1 className="admin-title text-[1rem] sm:text-[1.15rem]">Home</h1>
+        <p className="admin-banner-error mt-3">
           {extractErrorMessage(error)}
         </p>
       </section>

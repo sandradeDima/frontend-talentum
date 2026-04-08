@@ -41,9 +41,9 @@ export default async function SurveyDetailPage({ params }: SurveyDetailPageProps
     );
   } catch (error) {
     return (
-      <section className="rounded-xl border border-rose-200 bg-white p-5 shadow-sm">
-        <h1 className="text-lg font-semibold text-ink">Detalle de encuesta</h1>
-        <p className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+      <section className="admin-panel">
+        <h1 className="admin-title text-[1rem] sm:text-[1.15rem]">Detalle de encuesta</h1>
+        <p className="admin-banner-error mt-3">
           {extractErrorMessage(error)}
         </p>
         <div className="mt-4">

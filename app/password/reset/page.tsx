@@ -51,7 +51,7 @@ export default async function PasswordResetPage({ searchParams }: PasswordResetP
   if (!token) {
     return (
       <PageShell title="Restablecer contraseña" subtitle="Acceso seguro para administradores.">
-        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+        <p className="auth-banner-error">
           Token de recuperación faltante o inválido.
         </p>
       </PageShell>
@@ -78,14 +78,9 @@ export default async function PasswordResetPage({ searchParams }: PasswordResetP
 
     return (
       <PageShell title={content.title} subtitle="No fue posible continuar con este enlace.">
-        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-          {content.description}
-        </p>
+        <p className="auth-banner-error">{content.description}</p>
         <div className="mt-4">
-          <Link
-            href="/login"
-            className="text-sm font-medium text-brand transition hover:text-brandDark"
-          >
+          <Link href="/login" className="auth-link text-sm">
             Ir al login
           </Link>
         </div>

@@ -50,9 +50,9 @@ const statusLabels: Record<CompanyUserActivationStatus, string> = {
 };
 
 const statusBadgeClassMap: Record<CompanyUserActivationStatus, string> = {
-  PENDIENTE_ACTIVACION: 'border border-amber-200 bg-amber-50 text-amber-800',
-  ACTIVO: 'border border-emerald-200 bg-emerald-50 text-emerald-800',
-  INACTIVO: 'border border-slate-200 bg-slate-100 text-slate-700'
+  PENDIENTE_ACTIVACION: 'border-amber-300/35 bg-amber-400/10 text-amber-100',
+  ACTIVO: 'border-cooltura-lime/35 bg-cooltura-lime/12 text-cooltura-light',
+  INACTIVO: 'border-white/12 bg-white/8 text-cooltura-light/78'
 };
 
 const dateFormatter = new Intl.DateTimeFormat('es-BO', {
@@ -96,13 +96,13 @@ const Modal = ({
   onClose: () => void;
 }) => {
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4">
-      <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-5 shadow-lg">
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#0d0d0f]/75 p-4 backdrop-blur-sm">
+      <div className="admin-panel w-full max-w-xl">
         {children}
         <button
           type="button"
           onClick={onClose}
-          className="mt-4 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+          className="admin-button-secondary mt-4 px-3 py-1.5 text-xs"
         >
           Cerrar
         </button>
@@ -332,8 +332,8 @@ export function CompanyUsersManager({
 
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-ink">Usuarios</h2>
-          <p className="text-sm text-slate-600">
+          <h2 className="admin-title text-[1rem] sm:text-[1.15rem]">Usuarios</h2>
+          <p className="admin-subtitle mt-2">
             Gestión de usuarios administrativos de la empresa (rol CLIENT_ADMIN).
           </p>
         </div>
@@ -341,23 +341,23 @@ export function CompanyUsersManager({
           <button
             type="button"
             onClick={openCreateModal}
-            className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark"
+            className="admin-button-primary"
           >
             Agregar usuario
           </button>
         ) : (
-          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs text-amber-800">
+          <p className="admin-banner-warning px-3 py-1.5 text-xs">
             Solo ADMIN puede gestionar usuarios.
           </p>
         )}
       </header>
 
       {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
+        <div className="admin-panel border-dashed p-8 text-center text-sm text-cooltura-light/66">
           Esta empresa todavía no tiene usuarios administrativos cargados.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="admin-table-shell">
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
@@ -382,7 +382,7 @@ export function CompanyUsersManager({
                     <td className="px-4 py-3 text-slate-700">{row.role}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${statusBadgeClassMap[row.activationStatus]}`}
+                        className={`admin-status-badge ${statusBadgeClassMap[row.activationStatus]}`}
                       >
                         {statusLabels[row.activationStatus]}
                       </span>
@@ -390,7 +390,7 @@ export function CompanyUsersManager({
                     <td className="px-4 py-3 text-slate-700">
                       <div className="flex flex-wrap gap-1">
                         {row.hasCredentialAccess ? (
-                          <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+                          <span className="admin-status-badge border-white/12 bg-white/8 px-2 py-0.5 text-[0.58rem] text-cooltura-light/78">
                             Acceso con contraseña
                           </span>
                         ) : null}
@@ -412,7 +412,7 @@ export function CompanyUsersManager({
                         {!row.hasCredentialAccess &&
                         !row.hasGoogleLinked &&
                         !row.hasMicrosoftLinked ? (
-                          <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+                          <span className="admin-status-badge border-white/12 bg-white/8 px-2 py-0.5 text-[0.58rem] text-cooltura-light/78">
                             {row.accessModeLabel}
                           </span>
                         ) : null}
@@ -432,7 +432,7 @@ export function CompanyUsersManager({
                           type="button"
                           onClick={() => openEditModal(row)}
                           disabled={!canManage || isBusy}
-                          className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="admin-button-secondary rounded-md px-2 py-1 text-xs"
                         >
                           Editar
                         </button>
@@ -453,7 +453,7 @@ export function CompanyUsersManager({
                               ? 'Este usuario usa solo acceso social.'
                               : undefined
                           }
-                          className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="admin-button-secondary rounded-md px-2 py-1 text-xs"
                         >
                           Resetear contraseña
                         </button>
@@ -461,7 +461,7 @@ export function CompanyUsersManager({
                           type="button"
                           onClick={() => handleResendInvite(row)}
                           disabled={!canManage || isBusy || !row.canResendInvite}
-                          className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="admin-button-secondary rounded-md px-2 py-1 text-xs"
                         >
                           Reenviar invitación
                         </button>
@@ -477,10 +477,10 @@ export function CompanyUsersManager({
 
       {isModalOpen ? (
         <Modal onClose={resetModal}>
-          <h3 className="text-base font-semibold text-ink">
+          <h3 className="admin-title text-[0.95rem] sm:text-[1.05rem]">
             {editingUser ? 'Editar usuario' : 'Agregar usuario'}
           </h3>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="admin-subtitle mt-2">
             {editingUser
               ? 'Actualiza la información del usuario administrativo.'
               : 'Se creará en estado pendiente y se enviará invitación por correo.'}

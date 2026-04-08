@@ -38,11 +38,12 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
 
     return (
       <section className="space-y-4">
-        <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <header className="admin-panel">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-xl font-semibold text-ink">{company.name}</h1>
-              <p className="text-sm text-slate-600">
+              <p className="admin-kicker">Empresa</p>
+              <h1 className="admin-title mt-3">{company.name}</h1>
+              <p className="admin-subtitle mt-3">
                 Configura el perfil de la empresa y sus datos de gestión.
               </p>
             </div>
@@ -52,19 +53,19 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
           <nav className="mt-4 flex flex-wrap gap-2 text-sm">
             <Link
               href={`/admin/companies/${company.slug}#perfil`}
-              className="rounded-lg bg-brand px-3 py-1.5 font-medium text-white"
+              className="admin-button-primary px-3 py-1.5"
             >
               Configurar/modificar perfil
             </Link>
             <Link
               href={`/admin/companies/${company.slug}#usuarios`}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-50"
+              className="admin-button-secondary px-3 py-1.5"
             >
               Usuarios
             </Link>
             <Link
               href={`/admin/companies/${company.slug}#encuestas`}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-50"
+              className="admin-button-secondary px-3 py-1.5"
             >
               Encuestas
             </Link>
@@ -94,7 +95,7 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
           </div>
         </header>
 
-        <div id="perfil" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div id="perfil" className="admin-panel">
           <CompanyForm
             mode="edit"
             companySlug={company.slug}
@@ -103,7 +104,7 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
           />
         </div>
 
-        <div id="usuarios" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div id="usuarios" className="admin-panel">
           <CompanyUsersManager
             companySlug={company.slug}
             initialRows={usersData.rows}
@@ -111,17 +112,17 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
           />
         </div>
 
-        <div id="encuestas" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div id="encuestas" className="admin-panel">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h2 className="text-lg font-semibold text-ink">Encuestas de la empresa</h2>
-              <p className="text-sm text-slate-600">
+              <h2 className="admin-title text-[1rem] sm:text-[1.15rem]">Encuestas de la empresa</h2>
+              <p className="admin-subtitle mt-2">
                 Información específica de campañas para {company.name}.
               </p>
             </div>
             <Link
               href={`/admin/companies/${company.slug}/surveys`}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="admin-button-secondary px-3 py-1.5 text-sm"
             >
               Gestionar encuestas
             </Link>
@@ -136,9 +137,9 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
     );
   } catch (error) {
     return (
-      <section className="rounded-xl border border-rose-200 bg-white p-5 shadow-sm">
-        <h1 className="text-lg font-semibold text-ink">Detalle de empresa</h1>
-        <p className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+      <section className="admin-panel">
+        <h1 className="admin-title text-[1rem] sm:text-[1.15rem]">Detalle de empresa</h1>
+        <p className="admin-banner-error mt-3">
           {extractErrorMessage(error)}
         </p>
       </section>

@@ -71,18 +71,19 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
 
     return (
       <section className="space-y-4">
-        <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <header className="admin-panel">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-xl font-semibold text-ink">Directorio de empresas</h1>
-              <p className="text-sm text-slate-600">
+              <p className="admin-kicker">Administración global</p>
+              <h1 className="admin-title mt-3">Directorio de empresas</h1>
+              <p className="admin-subtitle mt-3">
                 Gestión de compañías multiempresa y sus administradores.
               </p>
             </div>
             {session.user.role === 'ADMIN' ? (
               <Link
                 href="/admin/companies/new"
-                className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark"
+                className="admin-button-primary"
               >
                 Crear empresa
               </Link>
@@ -95,13 +96,13 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
               name="search"
               defaultValue={search ?? ''}
               placeholder="Buscar por nombre, slug o correo de contacto"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
+              className="admin-input"
             />
 
             <select
               name="status"
               defaultValue={status ?? ''}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
+              className="admin-select"
             >
               <option value="">Todos los estados</option>
               {statusOptions.map((option) => (
@@ -113,7 +114,7 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
 
             <button
               type="submit"
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="admin-button-secondary"
             >
               Buscar
             </button>
@@ -121,14 +122,14 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
         </header>
 
         {success === 'created' ? (
-          <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <p className="admin-banner-success">
             Empresa creada correctamente.
           </p>
         ) : null}
 
         <CompanyTable rows={result.rows} />
 
-        <footer className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+        <footer className="admin-panel-soft flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
           <p>
             Mostrando {result.rows.length} de {result.pagination.total} empresas
           </p>
@@ -142,10 +143,10 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
                 search,
                 status
               })}
-              className={`rounded-lg border px-3 py-1.5 ${
+              className={`rounded-[1rem] border px-3 py-1.5 ${
                 result.pagination.page === 1
-                  ? 'pointer-events-none border-slate-200 text-slate-400'
-                  : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                  ? 'pointer-events-none border-white/8 text-cooltura-light/28'
+                  : 'border-white/14 text-cooltura-light/78 hover:bg-white/8'
               }`}
             >
               Anterior
@@ -156,10 +157,10 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
                 search,
                 status
               })}
-              className={`rounded-lg border px-3 py-1.5 ${
+              className={`rounded-[1rem] border px-3 py-1.5 ${
                 result.pagination.page >= result.pagination.totalPages
-                  ? 'pointer-events-none border-slate-200 text-slate-400'
-                  : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                  ? 'pointer-events-none border-white/8 text-cooltura-light/28'
+                  : 'border-white/14 text-cooltura-light/78 hover:bg-white/8'
               }`}
             >
               Siguiente
@@ -170,9 +171,9 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
     );
   } catch (error) {
     return (
-      <section className="rounded-xl border border-rose-200 bg-white p-5 shadow-sm">
-        <h1 className="text-lg font-semibold text-ink">Directorio de empresas</h1>
-        <p className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+      <section className="admin-panel">
+        <h1 className="admin-title text-[1rem] sm:text-[1.15rem]">Directorio de empresas</h1>
+        <p className="admin-banner-error mt-3">
           {extractErrorMessage(error)}
         </p>
       </section>

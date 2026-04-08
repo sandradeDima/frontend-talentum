@@ -35,13 +35,13 @@ export function LogoutButton({ fullWidth = false }: LogoutButtonProps) {
         type="button"
         onClick={handleLogout}
         disabled={isLoading}
-        className={`rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70 ${
+        className={`admin-button-secondary ${
           fullWidth ? 'w-full text-left' : ''
         }`}
       >
         {isLoading ? 'Cerrando sesión...' : 'Cerrar sesión'}
       </button>
-      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
+      {error ? <p className="text-xs text-rose-300">{error}</p> : null}
     </div>
   );
 }

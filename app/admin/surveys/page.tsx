@@ -91,17 +91,18 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
 
     return (
       <section className="space-y-4">
-        <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <header className="admin-panel">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h1 className="text-xl font-semibold text-ink">Encuestas</h1>
-              <p className="text-sm text-slate-600">
+              <p className="admin-kicker">Administración global</p>
+              <h1 className="admin-title mt-3">Encuestas</h1>
+              <p className="admin-subtitle mt-3">
                 Vista global de campañas por empresa.
               </p>
             </div>
             <Link
               href="/admin/surveys/history"
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="admin-button-secondary"
             >
               Ver histórico finalizado
             </Link>
@@ -113,7 +114,7 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
               name="search"
               defaultValue={search ?? ''}
               placeholder="Buscar por nombre, slug o empresa"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
+              className="admin-input"
             />
 
             <input
@@ -121,13 +122,13 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
               name="company"
               defaultValue={company ?? ''}
               placeholder="Empresa o slug"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
+              className="admin-input"
             />
 
             <select
               name="status"
               defaultValue={status ?? ''}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
+              className="admin-select"
             >
               <option value="">Todos los estados</option>
               {statusOptions.map((option) => (
@@ -139,7 +140,7 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
 
             <button
               type="submit"
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="admin-button-secondary"
             >
               Buscar
             </button>
@@ -147,14 +148,14 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
         </header>
 
         {result.rows.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
+          <div className="admin-panel border-dashed p-8 text-center text-sm text-cooltura-light/66">
             No hay encuestas para mostrar con estos filtros.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="admin-table-shell">
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-cooltura-gray">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Encuesta</th>
                     <th className="px-4 py-3 font-semibold">Empresa</th>
@@ -196,19 +197,19 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
                         <div className="flex justify-end gap-2">
                           <Link
                             href={`/admin/companies/${row.company.slug}/surveys/${row.slug}/reporting`}
-                            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                            className="admin-button-secondary px-3 py-1.5 text-xs"
                           >
                             Resultados
                           </Link>
                           <Link
                             href={`/admin/companies/${row.company.slug}/surveys/${row.slug}/operations`}
-                            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                            className="admin-button-secondary px-3 py-1.5 text-xs"
                           >
                             Operaciones
                           </Link>
                           <Link
                             href={`/admin/companies/${row.company.slug}/surveys/${row.slug}`}
-                            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                            className="admin-button-secondary px-3 py-1.5 text-xs"
                           >
                             Ver detalle
                           </Link>
@@ -222,7 +223,7 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
           </div>
         )}
 
-        <footer className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+        <footer className="admin-panel-soft flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
           <p>
             Mostrando {result.rows.length} de {result.pagination.total} encuestas
           </p>
@@ -237,10 +238,10 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
                 company,
                 status
               })}
-              className={`rounded-lg border px-3 py-1.5 ${
+              className={`rounded-[1rem] border px-3 py-1.5 ${
                 result.pagination.page === 1
-                  ? 'pointer-events-none border-slate-200 text-slate-400'
-                  : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                  ? 'pointer-events-none border-white/8 text-cooltura-light/28'
+                  : 'border-white/14 text-cooltura-light/78 hover:bg-white/8'
               }`}
             >
               Anterior
@@ -252,10 +253,10 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
                 company,
                 status
               })}
-              className={`rounded-lg border px-3 py-1.5 ${
+              className={`rounded-[1rem] border px-3 py-1.5 ${
                 result.pagination.page >= result.pagination.totalPages
-                  ? 'pointer-events-none border-slate-200 text-slate-400'
-                  : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                  ? 'pointer-events-none border-white/8 text-cooltura-light/28'
+                  : 'border-white/14 text-cooltura-light/78 hover:bg-white/8'
               }`}
             >
               Siguiente
@@ -266,9 +267,9 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
     );
   } catch (error) {
     return (
-      <section className="rounded-xl border border-rose-200 bg-white p-5 shadow-sm">
-        <h1 className="text-lg font-semibold text-ink">Encuestas</h1>
-        <p className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+      <section className="admin-panel">
+        <h1 className="admin-title text-[1rem] sm:text-[1.15rem]">Encuestas</h1>
+        <p className="admin-banner-error mt-3">
           {extractErrorMessage(error)}
         </p>
       </section>

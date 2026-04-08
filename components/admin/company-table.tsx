@@ -37,17 +37,17 @@ function FormIcon() {
 export function CompanyTable({ rows }: CompanyTableProps) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
+      <div className="admin-panel border-dashed p-8 text-center text-sm text-cooltura-light/66">
         No hay empresas para mostrar.
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="admin-table-shell">
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-cooltura-gray">
             <tr>
               <th className="px-4 py-3 font-semibold">Nombre</th>
               <th className="px-4 py-3 font-semibold">Cantidad de trabajadores</th>
@@ -75,7 +75,7 @@ export function CompanyTable({ rows }: CompanyTableProps) {
                   <div className="flex items-center justify-end gap-1">
                     <Link
                       href={`/admin/companies/${company.slug}`}
-                      className="rounded-md p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                      className="admin-button-ghost rounded-md p-2"
                       aria-label={`Abrir configuración de ${company.name}`}
                       title="Configuración"
                     >
@@ -83,7 +83,7 @@ export function CompanyTable({ rows }: CompanyTableProps) {
                     </Link>
                     <Link
                       href={`/admin/companies/${company.slug}/surveys`}
-                      className="rounded-md p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                      className="admin-button-ghost rounded-md p-2"
                       aria-label={`Abrir encuestas de ${company.name}`}
                       title="Encuestas"
                     >

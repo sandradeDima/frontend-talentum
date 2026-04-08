@@ -54,12 +54,15 @@ a {
   }
 
   .cooltura-input {
-    @apply w-full rounded-2xl border border-white/10 bg-[#afafaf] px-5 py-4 text-base text-cooltura-dark placeholder:text-white/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cooltura-lime;
+    @apply w-full rounded-2xl border bg-[#afafaf] px-5 py-4 text-base text-cooltura-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cooltura-lime;
+    border-color: rgba(255, 255, 255, 0.1);
     font-family: 'Montserrat Black', sans-serif;
   }
 
   .cooltura-surface-card {
-    @apply rounded-[2rem] border border-white/10 bg-white/5 shadow-cooltura backdrop-blur-sm;
+    @apply rounded-[2rem] border shadow-cooltura backdrop-blur-sm;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .auth-page {
@@ -132,7 +135,8 @@ a {
   }
 
   .auth-subtitle {
-    @apply mt-4 max-w-[34rem] text-sm leading-7 text-cooltura-light/76 sm:text-[1rem];
+    @apply mt-4 max-w-[34rem] text-sm leading-7 sm:text-[1rem];
+    color: rgba(243, 242, 241, 0.76);
   }
 
   .auth-label {
@@ -141,11 +145,15 @@ a {
   }
 
   .auth-input {
-    @apply w-full rounded-[1.2rem] border border-white/12 bg-white/6 px-4 py-3.5 text-sm text-cooltura-light placeholder:text-cooltura-gray focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+    @apply w-full rounded-[1.2rem] border px-4 py-3.5 text-sm text-cooltura-light placeholder:text-cooltura-gray focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
   }
 
   .auth-checkbox {
-    @apply h-4 w-4 rounded border-white/20 bg-white/6 text-cooltura-lime focus:ring-cooltura-lime;
+    @apply h-4 w-4 rounded text-cooltura-lime focus:ring-cooltura-lime;
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.06);
   }
 
   .auth-button-primary {
@@ -153,32 +161,55 @@ a {
   }
 
   .auth-button-secondary {
-    @apply inline-flex w-full items-center justify-center rounded-full border border-white/12 bg-white/6 px-4 py-3 text-sm text-cooltura-light transition hover:border-cooltura-lime/60 hover:text-cooltura-lime focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex w-full items-center justify-center rounded-full px-4 py-3 text-sm text-cooltura-light transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .auth-button-secondary:hover {
+    border-color: rgba(193, 250, 0, 0.6);
+    color: #c1fa00;
   }
 
   .auth-button-toggle {
-    @apply absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-3 py-1.5 text-[0.7rem] uppercase tracking-[0.12em] text-cooltura-light/72 transition hover:bg-white/10 hover:text-cooltura-lime;
+    @apply absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-3 py-1.5 text-[0.7rem] uppercase tracking-[0.12em] transition hover:text-cooltura-lime;
     font-family: 'Lemon Milk', sans-serif;
+    color: rgba(243, 242, 241, 0.72);
+  }
+
+  .auth-button-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
   }
 
   .auth-banner-info {
-    @apply rounded-[1.2rem] border border-cooltura-lime/20 bg-cooltura-lime/10 px-4 py-3 text-sm text-cooltura-light;
+    @apply rounded-[1.2rem] px-4 py-3 text-sm text-cooltura-light;
+    border: 1px solid rgba(193, 250, 0, 0.2);
+    background: rgba(193, 250, 0, 0.1);
   }
 
   .auth-banner-warning {
-    @apply rounded-[1.2rem] border border-amber-300/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100;
+    @apply rounded-[1.2rem] px-4 py-3 text-sm text-amber-100;
+    border: 1px solid rgba(252, 211, 77, 0.3);
+    background: rgba(251, 191, 36, 0.1);
   }
 
   .auth-banner-error {
-    @apply rounded-[1.2rem] border border-rose-300/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100;
+    @apply rounded-[1.2rem] px-4 py-3 text-sm text-rose-100;
+    border: 1px solid rgba(253, 164, 175, 0.3);
+    background: rgba(244, 63, 94, 0.1);
   }
 
   .auth-banner-success {
-    @apply rounded-[1.2rem] border border-cooltura-lime/30 bg-cooltura-lime/10 px-4 py-3 text-sm text-cooltura-light;
+    @apply rounded-[1.2rem] px-4 py-3 text-sm text-cooltura-light;
+    border: 1px solid rgba(193, 250, 0, 0.3);
+    background: rgba(193, 250, 0, 0.1);
   }
 
   .auth-rule-card {
-    @apply rounded-[1.2rem] border border-white/10 bg-white/5 px-4 py-3 text-xs leading-6 text-cooltura-light/78;
+    @apply rounded-[1.2rem] border px-4 py-3 text-xs leading-6;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(243, 242, 241, 0.78);
   }
 
   .auth-link {
@@ -210,12 +241,22 @@ a {
     @apply relative min-w-0 flex-1;
   }
 
+  .admin-sidebar {
+    @apply rounded-[2rem] border shadow-cooltura backdrop-blur-sm;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(24, 24, 27, 0.92);
+  }
+
   .admin-panel {
-    @apply rounded-[1.75rem] border border-white/10 bg-white/5 p-5 shadow-cooltura backdrop-blur-sm;
+    @apply rounded-[1.75rem] border p-5 shadow-cooltura backdrop-blur-sm;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .admin-panel-soft {
-    @apply rounded-[1.3rem] border border-white/10 bg-white/6 p-4;
+    @apply rounded-[1.3rem] border p-4;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.06);
   }
 
   .admin-kicker {
@@ -229,25 +270,59 @@ a {
   }
 
   .admin-subtitle {
-    @apply text-sm leading-6 text-cooltura-light/72;
+    @apply text-sm leading-6;
+    color: rgba(243, 242, 241, 0.72);
   }
 
   .admin-button-primary {
-    @apply inline-flex items-center justify-center rounded-[1rem] border border-cooltura-lime/70 bg-cooltura-lime px-4 py-2.5 text-sm text-cooltura-dark shadow-cooltura transition hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center rounded-[1rem] bg-cooltura-lime px-4 py-2.5 text-sm text-white shadow-cooltura transition hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+    border: 1px solid rgba(193, 250, 0, 0.7);
+    color: #ffffff;
+  }
+
+  a.admin-button-primary,
+  a.admin-button-primary:hover,
+  a.admin-button-primary:visited,
+  .admin-theme a.admin-button-primary,
+  .admin-theme a.admin-button-primary:hover,
+  .admin-theme a.admin-button-primary:visited {
+    color: #ffffff;
   }
 
   .admin-button-secondary {
-    @apply inline-flex items-center justify-center rounded-[1rem] border border-white/14 bg-white/6 px-4 py-2.5 text-sm text-cooltura-light transition hover:border-cooltura-lime/40 hover:bg-white/10 hover:text-cooltura-lime focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center rounded-[1rem] px-4 py-2.5 text-sm text-cooltura-light transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .admin-button-secondary:hover {
+    border-color: rgba(193, 250, 0, 0.4);
+    background: rgba(255, 255, 255, 0.1);
+    color: #c1fa00;
   }
 
   .admin-button-ghost {
-    @apply inline-flex items-center justify-center rounded-[1rem] px-4 py-2.5 text-sm text-cooltura-light/76 transition hover:bg-white/8 hover:text-cooltura-lime focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center rounded-[1rem] px-4 py-2.5 text-sm transition hover:text-cooltura-lime focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+    color: rgba(243, 242, 241, 0.76);
+  }
+
+  .admin-button-ghost:hover {
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .admin-input,
   .admin-select,
   .admin-textarea {
-    @apply w-full rounded-[1rem] border border-white/12 bg-white/6 px-3.5 py-2.5 text-sm text-cooltura-light placeholder:text-cooltura-gray focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:bg-white/8 disabled:text-cooltura-light/42;
+    @apply w-full rounded-[1rem] border px-3.5 py-2.5 text-sm text-cooltura-light placeholder:text-cooltura-gray focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed;
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .admin-input:disabled,
+  .admin-select:disabled,
+  .admin-textarea:disabled {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(243, 242, 241, 0.42);
   }
 
   .admin-label {
@@ -256,19 +331,27 @@ a {
   }
 
   .admin-banner-success {
-    @apply rounded-[1rem] border border-cooltura-lime/25 bg-cooltura-lime/10 px-4 py-3 text-sm text-cooltura-light;
+    @apply rounded-[1rem] px-4 py-3 text-sm text-cooltura-light;
+    border: 1px solid rgba(193, 250, 0, 0.25);
+    background: rgba(193, 250, 0, 0.1);
   }
 
   .admin-banner-warning {
-    @apply rounded-[1rem] border border-amber-300/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100;
+    @apply rounded-[1rem] px-4 py-3 text-sm text-amber-100;
+    border: 1px solid rgba(252, 211, 77, 0.3);
+    background: rgba(251, 191, 36, 0.1);
   }
 
   .admin-banner-error {
-    @apply rounded-[1rem] border border-rose-300/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100;
+    @apply rounded-[1rem] px-4 py-3 text-sm text-rose-100;
+    border: 1px solid rgba(253, 164, 175, 0.3);
+    background: rgba(244, 63, 94, 0.1);
   }
 
   .admin-table-shell {
-    @apply overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5 shadow-cooltura backdrop-blur-sm;
+    @apply overflow-hidden rounded-[1.5rem] border shadow-cooltura backdrop-blur-sm;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .admin-status-badge {
@@ -345,7 +428,7 @@ a {
 
   .admin-theme .bg-brand.text-white,
   .admin-theme .text-white.bg-brand {
-    color: #151517;
+    color: #ffffff;
   }
 
   .admin-theme .hover\:bg-brandDark:hover {

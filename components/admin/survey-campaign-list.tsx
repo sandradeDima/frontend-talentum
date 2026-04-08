@@ -16,7 +16,7 @@ const dateFormatter = new Intl.DateTimeFormat('es-BO', {
 export function SurveyCampaignList({ companySlug, rows, canManage }: SurveyCampaignListProps) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+      <div className="admin-panel border-dashed p-8 text-center">
         <p className="text-base font-semibold text-ink">Aún no hay encuestas creadas</p>
         <p className="mt-1 text-sm text-slate-600">
           Crea la primera campaña para comenzar la medición del clima.
@@ -26,10 +26,10 @@ export function SurveyCampaignList({ companySlug, rows, canManage }: SurveyCampa
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="admin-table-shell">
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-cooltura-gray">
             <tr>
               <th className="px-4 py-3 font-semibold">Nombre</th>
               <th className="px-4 py-3 font-semibold">Fecha de creación</th>
@@ -84,19 +84,19 @@ export function SurveyCampaignList({ companySlug, rows, canManage }: SurveyCampa
                     <div className="flex justify-end gap-2 whitespace-nowrap">
                       <Link
                         href={`/admin/companies/${companySlug}/surveys/${survey.slug}/reporting`}
-                        className="inline-flex min-w-24 justify-center rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                        className="admin-button-secondary min-w-24 px-3 py-1.5 text-xs"
                       >
                         Resultados
                       </Link>
                       <Link
                         href={`/admin/companies/${companySlug}/surveys/${survey.slug}/operations`}
-                        className="inline-flex min-w-24 justify-center rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                        className="admin-button-secondary min-w-24 px-3 py-1.5 text-xs"
                       >
                         Operaciones
                       </Link>
                       <Link
                         href={`/admin/companies/${companySlug}/surveys/${survey.slug}`}
-                        className="inline-flex min-w-24 justify-center rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                        className="admin-button-secondary min-w-24 px-3 py-1.5 text-xs"
                       >
                         {canManage ? 'Editar' : 'Ver detalle'}
                       </Link>

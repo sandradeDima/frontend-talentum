@@ -1,7 +1,8 @@
 export default function AdminLoading() {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <p className="text-sm text-slate-600">Cargando información...</p>
+    <div className="admin-panel">
+      <p className="admin-kicker">COOLtura Back Office</p>
+      <p className="mt-3 text-sm text-cooltura-light/72">Cargando información...</p>
     </div>
   );
 }

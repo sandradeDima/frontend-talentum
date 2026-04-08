@@ -61,9 +61,7 @@ export default async function CompanyLoginPage({
       supportConfig={supportConfig}
     >
       {companyError ? (
-        <p className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-          {companyError}
-        </p>
+        <p className="auth-banner-error mb-4">{companyError}</p>
       ) : null}
 
       <LoginForm

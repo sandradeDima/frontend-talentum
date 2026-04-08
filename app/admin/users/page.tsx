@@ -30,9 +30,9 @@ const statusLabels: Record<CompanyUserActivationStatus, string> = {
 };
 
 const statusClassMap: Record<CompanyUserActivationStatus, string> = {
-  PENDIENTE_ACTIVACION: 'border border-amber-200 bg-amber-50 text-amber-800',
-  ACTIVO: 'border border-emerald-200 bg-emerald-50 text-emerald-800',
-  INACTIVO: 'border border-slate-200 bg-slate-100 text-slate-700'
+  PENDIENTE_ACTIVACION: 'border-amber-300/35 bg-amber-400/10 text-amber-100',
+  ACTIVO: 'border-cooltura-lime/35 bg-cooltura-lime/12 text-cooltura-light',
+  INACTIVO: 'border-white/12 bg-white/8 text-cooltura-light/78'
 };
 
 const statusOptions: Array<{ value: CompanyUserActivationStatus; label: string }> = [
@@ -106,9 +106,10 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
 
     return (
       <section className="space-y-4">
-        <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h1 className="text-xl font-semibold text-ink">Usuarios</h1>
-          <p className="text-sm text-slate-600">
+        <header className="admin-panel">
+          <p className="admin-kicker">Administración global</p>
+          <h1 className="admin-title mt-3">Usuarios</h1>
+          <p className="admin-subtitle mt-3">
             Vista global de usuarios administrativos por empresa.
           </p>
 
@@ -118,7 +119,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
               name="search"
               defaultValue={search ?? ''}
               placeholder="Buscar por nombre, correo o empresa"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
+              className="admin-input"
             />
 
             <input
@@ -126,13 +127,13 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
               name="company"
               defaultValue={company ?? ''}
               placeholder="Empresa o slug"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
+              className="admin-input"
             />
 
             <select
               name="activationStatus"
               defaultValue={activationStatus ?? ''}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
+              className="admin-select"
             >
               <option value="">Todos los estados</option>
               {statusOptions.map((option) => (
@@ -144,7 +145,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
 
             <button
               type="submit"
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="admin-button-secondary"
             >
               Buscar
             </button>
@@ -152,14 +153,14 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
         </header>
 
         {result.rows.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
+          <div className="admin-panel border-dashed p-8 text-center text-sm text-cooltura-light/66">
             No hay usuarios para mostrar con estos filtros.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="admin-table-shell">
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-cooltura-gray">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Usuario</th>
                     <th className="px-4 py-3 font-semibold">Empresa</th>
@@ -189,9 +190,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                       </td>
                       <td className="px-4 py-3 text-slate-700">{row.email}</td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${statusClassMap[row.activationStatus]}`}
-                        >
+                        <span className={`admin-status-badge ${statusClassMap[row.activationStatus]}`}>
                           {statusLabels[row.activationStatus]}
                         </span>
                       </td>
@@ -208,7 +207,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                         {row.company ? (
                           <Link
                             href={`/admin/companies/${row.company.slug}#usuarios`}
-                            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                            className="admin-button-secondary px-3 py-1.5 text-xs"
                           >
                             Ver empresa
                           </Link>
@@ -224,7 +223,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
           </div>
         )}
 
-        <footer className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+        <footer className="admin-panel-soft flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
           <p>
             Mostrando {result.rows.length} de {result.pagination.total} usuarios
           </p>
@@ -239,10 +238,10 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                 company,
                 activationStatus
               })}
-              className={`rounded-lg border px-3 py-1.5 ${
+              className={`rounded-[1rem] border px-3 py-1.5 ${
                 result.pagination.page === 1
-                  ? 'pointer-events-none border-slate-200 text-slate-400'
-                  : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                  ? 'pointer-events-none border-white/8 text-cooltura-light/28'
+                  : 'border-white/14 text-cooltura-light/78 hover:bg-white/8'
               }`}
             >
               Anterior
@@ -254,10 +253,10 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                 company,
                 activationStatus
               })}
-              className={`rounded-lg border px-3 py-1.5 ${
+              className={`rounded-[1rem] border px-3 py-1.5 ${
                 result.pagination.page >= result.pagination.totalPages
-                  ? 'pointer-events-none border-slate-200 text-slate-400'
-                  : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                  ? 'pointer-events-none border-white/8 text-cooltura-light/28'
+                  : 'border-white/14 text-cooltura-light/78 hover:bg-white/8'
               }`}
             >
               Siguiente
@@ -268,9 +267,9 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
     );
   } catch (error) {
     return (
-      <section className="rounded-xl border border-rose-200 bg-white p-5 shadow-sm">
-        <h1 className="text-lg font-semibold text-ink">Usuarios</h1>
-        <p className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+      <section className="admin-panel">
+        <h1 className="admin-title text-[1rem] sm:text-[1.15rem]">Usuarios</h1>
+        <p className="admin-banner-error mt-3">
           {extractErrorMessage(error)}
         </p>
       </section>

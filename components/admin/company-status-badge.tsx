@@ -6,15 +6,15 @@ const statusConfig: Record<
 > = {
   PENDING_SETUP: {
     label: 'Pendiente',
-    className: 'bg-amber-50 text-amber-700 ring-amber-200'
+    className: 'border-amber-300/35 bg-amber-400/10 text-amber-100'
   },
   ACTIVE: {
     label: 'Activa',
-    className: 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+    className: 'border-cooltura-lime/35 bg-cooltura-lime/12 text-cooltura-light'
   },
   INACTIVE: {
     label: 'Inactiva',
-    className: 'bg-slate-100 text-slate-700 ring-slate-200'
+    className: 'border-white/12 bg-white/8 text-cooltura-light/78'
   }
 };
 
@@ -26,9 +26,7 @@ export function CompanyStatusBadge({ status }: CompanyStatusBadgeProps) {
   const config = statusConfig[status];
 
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${config.className}`}
-    >
+    <span className={`admin-status-badge ${config.className}`}>
       {config.label}
     </span>
   );

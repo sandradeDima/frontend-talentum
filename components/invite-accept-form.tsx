@@ -77,7 +77,7 @@ export function InviteAcceptForm({ token, email, companyName }: InviteAcceptForm
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+      <div className="auth-banner-info">
         <p>
           <span className="font-medium">Empresa:</span> {companyName}
         </p>
@@ -87,7 +87,7 @@ export function InviteAcceptForm({ token, email, companyName }: InviteAcceptForm
       </div>
 
       <div>
-        <label htmlFor="name" className="mb-1 block text-sm font-medium">
+        <label htmlFor="name" className="auth-label">
           Nombre completo
         </label>
         <input
@@ -97,13 +97,13 @@ export function InviteAcceptForm({ token, email, companyName }: InviteAcceptForm
           onChange={(event) => setName(event.target.value)}
           required
           minLength={2}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
+          className="auth-input"
           placeholder="Juan Pérez"
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="mb-1 block text-sm font-medium">
+        <label htmlFor="password" className="auth-label">
           Contraseña
         </label>
         <div className="relative">
@@ -116,34 +116,34 @@ export function InviteAcceptForm({ token, email, companyName }: InviteAcceptForm
             required
             minLength={8}
             autoComplete="new-password"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 pr-20 text-sm outline-none ring-brand transition focus:ring-2"
+            className="auth-input pr-24"
             placeholder="••••••••"
           />
           <button
             type="button"
             onClick={() => setShowPassword((current) => !current)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-100"
+            className="auth-button-toggle"
           >
             {showPassword ? 'Ocultar' : 'Mostrar'}
           </button>
         </div>
-        <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+        <div className="auth-rule-card mt-2">
           <p className="mb-1 font-medium">La contraseña debe incluir:</p>
           <ul className="space-y-1">
-            <li className={passwordRules.hasMinLength ? 'text-emerald-700' : 'text-slate-600'}>
+            <li className={passwordRules.hasMinLength ? 'text-cooltura-lime' : 'text-cooltura-light/62'}>
               • Mínimo 8 caracteres
             </li>
             <li
               className={
-                passwordRules.hasUppercaseAndLowercase ? 'text-emerald-700' : 'text-slate-600'
+                passwordRules.hasUppercaseAndLowercase ? 'text-cooltura-lime' : 'text-cooltura-light/62'
               }
             >
               • Mayúsculas y minúsculas
             </li>
-            <li className={passwordRules.hasNumber ? 'text-emerald-700' : 'text-slate-600'}>
+            <li className={passwordRules.hasNumber ? 'text-cooltura-lime' : 'text-cooltura-light/62'}>
               • Al menos un número
             </li>
-            <li className={passwordRules.hasSymbol ? 'text-emerald-700' : 'text-slate-600'}>
+            <li className={passwordRules.hasSymbol ? 'text-cooltura-lime' : 'text-cooltura-light/62'}>
               • Al menos un símbolo
             </li>
           </ul>
@@ -151,7 +151,7 @@ export function InviteAcceptForm({ token, email, companyName }: InviteAcceptForm
       </div>
 
       <div>
-        <label htmlFor="confirmPassword" className="mb-1 block text-sm font-medium">
+        <label htmlFor="confirmPassword" className="auth-label">
           Confirmar contraseña
         </label>
         <div className="relative">
@@ -164,34 +164,26 @@ export function InviteAcceptForm({ token, email, companyName }: InviteAcceptForm
             required
             minLength={8}
             autoComplete="new-password"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 pr-20 text-sm outline-none ring-brand transition focus:ring-2"
+            className="auth-input pr-24"
             placeholder="••••••••"
           />
           <button
             type="button"
             onClick={() => setShowConfirmPassword((current) => !current)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-100"
+            className="auth-button-toggle"
           >
             {showConfirmPassword ? 'Ocultar' : 'Mostrar'}
           </button>
         </div>
       </div>
 
-      {error ? (
-        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-          {error}
-        </p>
-      ) : null}
-      {success ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          {success}
-        </p>
-      ) : null}
+      {error ? <p className="auth-banner-error">{error}</p> : null}
+      {success ? <p className="auth-banner-success">{success}</p> : null}
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-70"
+        className="auth-button-primary"
       >
         {isSubmitting ? 'Completando registro...' : 'Completar registro'}
       </button>

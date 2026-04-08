@@ -11,14 +11,15 @@ export default async function AdminProfilePage() {
 
   return (
     <section className="space-y-4">
-      <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h1 className="text-xl font-semibold text-ink">Mi perfil</h1>
-        <p className="text-sm text-slate-600">
+      <header className="admin-panel">
+        <p className="admin-kicker">Cuenta</p>
+        <h1 className="admin-title mt-3">Mi perfil</h1>
+        <p className="admin-subtitle mt-3">
           Información de cuenta y alcance dentro del panel.
         </p>
       </header>
 
-      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <article className="admin-panel">
         <dl className="grid gap-3 md:grid-cols-2">
           <div>
             <dt className="text-xs uppercase tracking-wide text-slate-500">Nombre</dt>
