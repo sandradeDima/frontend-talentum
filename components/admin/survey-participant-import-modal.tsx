@@ -398,7 +398,7 @@ export function SurveyParticipantImportModal({
                 disabled={!generateCredentials}
                 className="mt-0.5"
               />
-              Incluir credenciales en texto plano en la respuesta
+              Incluir credenciales en texto plano en la respuesta y en el correo
             </label>
           </div>
 

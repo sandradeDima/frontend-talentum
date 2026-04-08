@@ -917,10 +917,12 @@ export function SurveyEditor({
       </div>
 
       <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-base font-semibold text-ink">Sección Líder</h2>
+        <h2 className="text-base font-semibold text-ink">Sección Líderes</h2>
 
         <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-700">Introducción sección Líder</label>
+          <label className="text-sm font-medium text-slate-700">
+            Introducción sección Líderes
+          </label>
           <textarea
             rows={4}
             value={formState.leaderIntro}
@@ -950,7 +952,9 @@ export function SurveyEditor({
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-700">Pregunta opcional adicional (Líder)</label>
+          <label className="text-sm font-medium text-slate-700">
+            Pregunta opcional adicional (Líderes)
+          </label>
           <textarea
             rows={2}
             value={formState.leaderExtraQuestion ?? ''}
