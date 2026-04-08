@@ -1,0 +1,397 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Lemon Milk';
+  src: url('/assets/fonts/lemon_milk/LEMONMILK-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lemon Milk';
+  src: url('/assets/fonts/lemon_milk/LEMONMILK-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat Black';
+  src: url('/assets/fonts/MONTSERRAT-BLACK/MONTSERRAT-BLACK.TTF') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply min-h-screen bg-surface text-ink antialiased;
+  font-family: 'Montserrat Black', sans-serif;
+}
+
+a {
+  @apply text-brand hover:text-brandDark;
+}
+
+@layer components {
+  .cooltura-display {
+    font-family: 'Lemon Milk', sans-serif;
+  }
+
+  .cooltura-copy {
+    font-family: 'Montserrat Black', sans-serif;
+  }
+
+  .cooltura-pill-button {
+    @apply inline-flex items-center justify-center rounded-full bg-cooltura-lime px-8 py-3 text-sm text-cooltura-dark shadow-cooltura transition duration-200 hover:scale-[1.01] hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100;
+    font-family: 'Montserrat Black', sans-serif;
+  }
+
+  .cooltura-input {
+    @apply w-full rounded-2xl border border-white/10 bg-[#afafaf] px-5 py-4 text-base text-cooltura-dark placeholder:text-white/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cooltura-lime;
+    font-family: 'Montserrat Black', sans-serif;
+  }
+
+  .cooltura-surface-card {
+    @apply rounded-[2rem] border border-white/10 bg-white/5 shadow-cooltura backdrop-blur-sm;
+  }
+
+  .auth-page {
+    @apply relative isolate min-h-screen overflow-hidden bg-cooltura-dark text-cooltura-light;
+  }
+
+  .auth-page::before {
+    content: '';
+    position: absolute;
+    inset: -10% auto auto -8%;
+    width: 22rem;
+    height: 22rem;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(193, 250, 0, 0.28), rgba(193, 250, 0, 0));
+    filter: blur(14px);
+    opacity: 0.72;
+    pointer-events: none;
+  }
+
+  .auth-page::after {
+    content: '';
+    position: absolute;
+    inset: auto -8% -12% auto;
+    width: 30rem;
+    height: 24rem;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+    filter: blur(28px);
+    pointer-events: none;
+  }
+
+  .auth-shell {
+    @apply relative z-10 mx-auto flex min-h-screen w-full max-w-[1180px] flex-col justify-center px-4 py-10 sm:px-6 lg:px-8;
+  }
+
+  .auth-grid {
+    @apply grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,430px)] lg:items-center;
+  }
+
+  .auth-brand-panel {
+    @apply cooltura-surface-card relative overflow-hidden px-6 py-8 sm:px-8 sm:py-10;
+    background:
+      radial-gradient(circle at top left, rgba(193, 250, 0, 0.18), transparent 34%),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  }
+
+  .auth-brand-panel::after {
+    content: '';
+    position: absolute;
+    inset: auto -10% -20% auto;
+    width: 16rem;
+    height: 16rem;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(193, 250, 0, 0.16), rgba(193, 250, 0, 0));
+    pointer-events: none;
+  }
+
+  .auth-card {
+    @apply cooltura-surface-card px-6 py-7 sm:px-8 sm:py-8;
+  }
+
+  .auth-kicker {
+    @apply text-[0.7rem] uppercase tracking-[0.24em] text-cooltura-lime;
+    font-family: 'Lemon Milk', sans-serif;
+  }
+
+  .auth-title {
+    @apply mt-4 text-[1.9rem] uppercase leading-tight text-cooltura-light sm:text-[2.5rem];
+    font-family: 'Lemon Milk', sans-serif;
+  }
+
+  .auth-subtitle {
+    @apply mt-4 max-w-[34rem] text-sm leading-7 text-cooltura-light/76 sm:text-[1rem];
+  }
+
+  .auth-label {
+    @apply mb-2 block text-[0.72rem] uppercase tracking-[0.18em] text-cooltura-gray;
+    font-family: 'Lemon Milk', sans-serif;
+  }
+
+  .auth-input {
+    @apply w-full rounded-[1.2rem] border border-white/12 bg-white/6 px-4 py-3.5 text-sm text-cooltura-light placeholder:text-cooltura-gray focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .auth-checkbox {
+    @apply h-4 w-4 rounded border-white/20 bg-white/6 text-cooltura-lime focus:ring-cooltura-lime;
+  }
+
+  .auth-button-primary {
+    @apply cooltura-pill-button w-full;
+  }
+
+  .auth-button-secondary {
+    @apply inline-flex w-full items-center justify-center rounded-full border border-white/12 bg-white/6 px-4 py-3 text-sm text-cooltura-light transition hover:border-cooltura-lime/60 hover:text-cooltura-lime focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .auth-button-toggle {
+    @apply absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-3 py-1.5 text-[0.7rem] uppercase tracking-[0.12em] text-cooltura-light/72 transition hover:bg-white/10 hover:text-cooltura-lime;
+    font-family: 'Lemon Milk', sans-serif;
+  }
+
+  .auth-banner-info {
+    @apply rounded-[1.2rem] border border-cooltura-lime/20 bg-cooltura-lime/10 px-4 py-3 text-sm text-cooltura-light;
+  }
+
+  .auth-banner-warning {
+    @apply rounded-[1.2rem] border border-amber-300/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100;
+  }
+
+  .auth-banner-error {
+    @apply rounded-[1.2rem] border border-rose-300/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100;
+  }
+
+  .auth-banner-success {
+    @apply rounded-[1.2rem] border border-cooltura-lime/30 bg-cooltura-lime/10 px-4 py-3 text-sm text-cooltura-light;
+  }
+
+  .auth-rule-card {
+    @apply rounded-[1.2rem] border border-white/10 bg-white/5 px-4 py-3 text-xs leading-6 text-cooltura-light/78;
+  }
+
+  .auth-link {
+    @apply text-cooltura-lime transition hover:text-cooltura-light;
+  }
+
+  .admin-theme {
+    @apply relative min-h-screen overflow-hidden text-cooltura-light;
+    background:
+      radial-gradient(circle at top left, rgba(193, 250, 0, 0.08), transparent 28%),
+      radial-gradient(circle at bottom right, rgba(193, 250, 0, 0.06), transparent 24%),
+      linear-gradient(180deg, #121214 0%, #17171a 100%);
+    color-scheme: dark;
+  }
+
+  .admin-theme::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+    background-size: 120px 120px;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  .admin-main {
+    @apply relative min-w-0 flex-1;
+  }
+
+  .admin-panel {
+    @apply rounded-[1.75rem] border border-white/10 bg-white/5 p-5 shadow-cooltura backdrop-blur-sm;
+  }
+
+  .admin-panel-soft {
+    @apply rounded-[1.3rem] border border-white/10 bg-white/6 p-4;
+  }
+
+  .admin-kicker {
+    @apply text-[0.68rem] uppercase tracking-[0.22em] text-cooltura-lime;
+    font-family: 'Lemon Milk', sans-serif;
+  }
+
+  .admin-title {
+    @apply text-[1.3rem] uppercase leading-tight text-cooltura-light sm:text-[1.6rem];
+    font-family: 'Lemon Milk', sans-serif;
+  }
+
+  .admin-subtitle {
+    @apply text-sm leading-6 text-cooltura-light/72;
+  }
+
+  .admin-button-primary {
+    @apply inline-flex items-center justify-center rounded-[1rem] border border-cooltura-lime/70 bg-cooltura-lime px-4 py-2.5 text-sm text-cooltura-dark shadow-cooltura transition hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .admin-button-secondary {
+    @apply inline-flex items-center justify-center rounded-[1rem] border border-white/14 bg-white/6 px-4 py-2.5 text-sm text-cooltura-light transition hover:border-cooltura-lime/40 hover:bg-white/10 hover:text-cooltura-lime focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .admin-button-ghost {
+    @apply inline-flex items-center justify-center rounded-[1rem] px-4 py-2.5 text-sm text-cooltura-light/76 transition hover:bg-white/8 hover:text-cooltura-lime focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .admin-input,
+  .admin-select,
+  .admin-textarea {
+    @apply w-full rounded-[1rem] border border-white/12 bg-white/6 px-3.5 py-2.5 text-sm text-cooltura-light placeholder:text-cooltura-gray focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime disabled:cursor-not-allowed disabled:bg-white/8 disabled:text-cooltura-light/42;
+  }
+
+  .admin-label {
+    @apply text-[0.72rem] uppercase tracking-[0.16em] text-cooltura-gray;
+    font-family: 'Lemon Milk', sans-serif;
+  }
+
+  .admin-banner-success {
+    @apply rounded-[1rem] border border-cooltura-lime/25 bg-cooltura-lime/10 px-4 py-3 text-sm text-cooltura-light;
+  }
+
+  .admin-banner-warning {
+    @apply rounded-[1rem] border border-amber-300/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100;
+  }
+
+  .admin-banner-error {
+    @apply rounded-[1rem] border border-rose-300/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100;
+  }
+
+  .admin-table-shell {
+    @apply overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5 shadow-cooltura backdrop-blur-sm;
+  }
+
+  .admin-status-badge {
+    @apply inline-flex items-center rounded-full border px-3 py-1 text-[0.68rem] uppercase tracking-[0.16em];
+    font-family: 'Lemon Milk', sans-serif;
+  }
+
+  .admin-theme .bg-white {
+    background-color: rgba(29, 29, 32, 0.82);
+  }
+
+  .admin-theme .bg-slate-50 {
+    background-color: rgba(243, 242, 241, 0.05);
+  }
+
+  .admin-theme .bg-slate-100 {
+    background-color: rgba(243, 242, 241, 0.09);
+  }
+
+  .admin-theme .border-slate-100,
+  .admin-theme .border-slate-200 {
+    border-color: rgba(243, 242, 241, 0.09);
+  }
+
+  .admin-theme .border-slate-300 {
+    border-color: rgba(243, 242, 241, 0.14);
+  }
+
+  .admin-theme .text-ink,
+  .admin-theme .text-slate-900 {
+    color: #f3f2f1;
+  }
+
+  .admin-theme .text-slate-700 {
+    color: rgba(243, 242, 241, 0.84);
+  }
+
+  .admin-theme .text-slate-600 {
+    color: rgba(243, 242, 241, 0.68);
+  }
+
+  .admin-theme .text-slate-500 {
+    color: rgba(243, 242, 241, 0.5);
+  }
+
+  .admin-theme .text-slate-400 {
+    color: rgba(243, 242, 241, 0.36);
+  }
+
+  .admin-theme .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+  .admin-theme .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgba(243, 242, 241, 0.08);
+  }
+
+  .admin-theme .shadow-sm {
+    box-shadow: 0 22px 54px rgba(0, 0, 0, 0.24);
+  }
+
+  .admin-theme .shadow-lg {
+    box-shadow: 0 30px 76px rgba(0, 0, 0, 0.42);
+  }
+
+  .admin-theme .text-brand {
+    color: #c1fa00;
+  }
+
+  .admin-theme .hover\:text-brandDark:hover {
+    color: #f3f2f1;
+  }
+
+  .admin-theme .bg-brand {
+    background-color: #c1fa00;
+  }
+
+  .admin-theme .bg-brand.text-white,
+  .admin-theme .text-white.bg-brand {
+    color: #151517;
+  }
+
+  .admin-theme .hover\:bg-brandDark:hover {
+    background-color: #d7ff4e;
+  }
+
+  .admin-theme .hover\:bg-slate-50:hover,
+  .admin-theme .hover\:bg-slate-100:hover {
+    background-color: rgba(243, 242, 241, 0.08);
+  }
+
+  .admin-theme input,
+  .admin-theme select,
+  .admin-theme textarea {
+    background-color: rgba(243, 242, 241, 0.06);
+    border-color: rgba(243, 242, 241, 0.12);
+    color: #f3f2f1;
+  }
+
+  .admin-theme input::placeholder,
+  .admin-theme textarea::placeholder {
+    color: rgba(160, 160, 160, 0.88);
+  }
+
+  .admin-theme input[type='file']::file-selector-button {
+    border: 0;
+    border-radius: 9999px;
+    background: rgba(193, 250, 0, 0.16);
+    color: #f3f2f1;
+    padding: 0.45rem 0.85rem;
+    margin-right: 0.75rem;
+  }
+
+  .admin-theme select option {
+    background: #151517;
+    color: #f3f2f1;
+  }
+
+  .admin-theme h1,
+  .admin-theme h2 {
+    font-family: 'Lemon Milk', sans-serif;
+    letter-spacing: 0.04em;
+  }
+
+  .admin-theme thead {
+    font-family: 'Lemon Milk', sans-serif;
+    letter-spacing: 0.12em;
+  }
+}
