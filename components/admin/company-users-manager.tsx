@@ -96,8 +96,8 @@ const Modal = ({
   onClose: () => void;
 }) => {
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#0d0d0f]/75 p-4 backdrop-blur-sm">
-      <div className="admin-panel w-full max-w-xl">
+    <div className="admin-modal-overlay">
+      <div className="admin-modal-shell admin-modal-shell-sm">
         {children}
         <button
           type="button"

@@ -259,8 +259,8 @@ const sanitizePayload = (input: SurveyCampaignUpsertInput): SurveyCampaignUpsert
 
 const Modal = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4">
-      <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-5 shadow-lg">
+    <div className="admin-modal-overlay">
+      <div className="admin-modal-shell admin-modal-shell-sm">
         {children}
       </div>
     </div>

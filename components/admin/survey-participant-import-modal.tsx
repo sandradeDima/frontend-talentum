@@ -266,8 +266,8 @@ export function SurveyParticipantImportModal({
   const hiddenErrorsCount = Math.max(0, errorSource.length - displayedErrors.length);
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4">
-      <div className="w-full max-w-5xl rounded-2xl border border-slate-200 bg-white p-5 shadow-lg">
+    <div className="admin-modal-overlay">
+      <div className="admin-modal-shell admin-modal-shell-lg">
         <header className="space-y-2">
           <h3 className="text-lg font-semibold text-ink">Importar participantes</h3>
           <p className="text-sm text-slate-600">
