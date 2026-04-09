@@ -5,6 +5,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const hopByHopHeaders = new Set([
+  'accept-encoding',
   'connection',
   'content-length',
   'host',
@@ -15,6 +16,13 @@ const hopByHopHeaders = new Set([
   'trailer',
   'transfer-encoding',
   'upgrade'
+]);
+
+const responseHeadersToDrop = new Set([
+  'content-encoding',
+  'content-length',
+  'set-cookie',
+  'transfer-encoding'
 ]);
 
 const buildUpstreamUrl = (request: NextRequest, path: string[]): URL => {
@@ -79,7 +87,7 @@ const handler = async (
   const responseHeaders = new Headers();
 
   upstreamResponse.headers.forEach((value, key) => {
-    if (key.toLowerCase() === 'set-cookie') {
+    if (responseHeadersToDrop.has(key.toLowerCase())) {
       return;
     }
 
