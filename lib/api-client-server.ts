@@ -3,12 +3,25 @@ import { env } from './env';
 import type { ApiEnvelope } from '@/types/api';
 import { ApiRequestError } from '@/types/api';
 
-const buildUrl = (path: string) => {
+const buildUrl = (path: string, requestHeaders: Headers) => {
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
   }
 
-  return `${env.apiUrl}${path.startsWith('/') ? path : `/${path}`}`;
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  if (env.apiUrl.startsWith('http://') || env.apiUrl.startsWith('https://')) {
+    return `${env.apiUrl}${normalizedPath}`;
+  }
+
+  const forwardedHost =
+    requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host');
+  const forwardedProto =
+    requestHeaders.get('x-forwarded-proto') ??
+    (forwardedHost?.includes('localhost') ? 'http' : 'https');
+  const origin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : env.appUrl;
+
+  return `${origin}${env.apiUrl}${normalizedPath}`;
 };
 
 const defaultHeaders = {
@@ -48,7 +61,7 @@ export async function requestApiServer<T>(
     ...(init.headers ?? {})
   };
 
-  const response = await fetch(buildUrl(path), {
+  const response = await fetch(buildUrl(path, incomingHeaders), {
     ...init,
     cache: 'no-store',
     headers: mergedHeaders

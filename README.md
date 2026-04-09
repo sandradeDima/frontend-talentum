@@ -47,6 +47,8 @@ Archivo: `.env.example`
 - `NEXT_PUBLIC_APP_URL="http://localhost:3000"`
 - `NEXT_PUBLIC_API_URL="http://localhost:4000/api"`
 
+El frontend proxya todas las llamadas del navegador por `"/api"` y reenvía al backend configurado en `NEXT_PUBLIC_API_URL`.
+
 ## Local development
 
 1. `cp .env.example .env.local`
