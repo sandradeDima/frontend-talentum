@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireSession } from '@/lib/auth-session';
 import { extractErrorMessage } from '@/lib/auth-shared';
+import { GlobalAdminCreator } from '@/components/admin/global-admin-creator';
 import { getGlobalCompanyUsersServer } from '@/services/company-user.server';
 import type { CompanyUserActivationStatus } from '@/types/company-user';
 
@@ -110,7 +111,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
           <p className="admin-kicker">Administración global</p>
           <h1 className="admin-title mt-3">Usuarios</h1>
           <p className="admin-subtitle mt-3">
-            Vista global de usuarios administrativos por empresa.
+            Vista global de usuarios administrativos de plataforma y empresa.
           </p>
 
           <form className="mt-4 grid gap-3 md:grid-cols-[1fr,220px,180px,auto]">
@@ -151,6 +152,8 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
             </button>
           </form>
         </header>
+
+        <GlobalAdminCreator />
 
         {result.rows.length === 0 ? (
           <div className="admin-panel border-dashed p-8 text-center text-sm text-cooltura-light/66">

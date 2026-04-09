@@ -1,9 +1,17 @@
 import { requestApiClient } from '@/lib/api-client-browser';
 import type {
   CompanyUserRow,
+  CreateGlobalAdminInput,
   CreateCompanyUserInput,
   UpdateCompanyUserInput
 } from '@/types/company-user';
+
+export const createGlobalAdminClient = async (input: CreateGlobalAdminInput) => {
+  return requestApiClient<{ user: CompanyUserRow }>('/admin/users', {
+    method: 'POST',
+    body: JSON.stringify(input)
+  });
+};
 
 export const createCompanyUserClient = async (
   companySlug: string,

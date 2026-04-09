@@ -1,4 +1,4 @@
-export type CompanyUserRole = 'CLIENT_ADMIN';
+export type CompanyUserRole = 'ADMIN' | 'CLIENT_ADMIN';
 
 export type CompanyUserActivationStatus =
   | 'PENDIENTE_ACTIVACION'
@@ -72,4 +72,12 @@ export type UpdateCompanyUserInput = {
   phone?: string;
   role?: CompanyUserRole;
   activationStatus?: CompanyUserActivationStatus;
+};
+
+export type CreateGlobalAdminInput = {
+  name: string;
+  lastName?: string;
+  email: string;
+  phone?: string;
+  password: string;
 };
