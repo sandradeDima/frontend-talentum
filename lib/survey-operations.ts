@@ -48,7 +48,7 @@ export const resolveRespondentImportMimeType = (input: {
 };
 
 export const isSurveyImportEnabled = (status: SurveyCampaignStatus): boolean => {
-  return status !== 'BORRADOR' && status !== 'FINALIZADA';
+  return status !== 'FINALIZADA';
 };
 
 export const formatFileSize = (bytes: number): string => {

@@ -85,6 +85,8 @@ const formatOptionalDateTime = (value: string | null): string => {
 const getApiErrorMessage = (error: unknown): string => {
   if (error instanceof ApiRequestError) {
     switch (error.mensajeTecnico) {
+      case 'SURVEY_PARTICIPANTS_REQUIRED_BEFORE_INITIAL_SEND':
+        return 'Importa participantes antes de programar el envío inicial.';
       case 'SURVEY_INITIAL_SEND_REQUIRED':
         return 'Debes programar el envío inicial antes de continuar.';
       case 'INVALID_SURVEY_SEND_SCHEDULE':
@@ -120,6 +122,72 @@ const Modal = ({ children }: { children: ReactNode }) => {
   );
 };
 
+type ActionTone = 'primary' | 'secondary' | 'warning' | 'danger';
+
+const actionButtonClassName = (tone: ActionTone, disabled: boolean) => {
+  const baseClassName =
+    'inline-flex min-h-11 items-center justify-center rounded-[1rem] border px-4 py-2.5 text-sm font-semibold transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime';
+
+  if (disabled) {
+    return `${baseClassName} cursor-not-allowed border-slate-300 bg-slate-100 text-slate-400 shadow-none`;
+  }
+
+  switch (tone) {
+    case 'primary':
+      return `${baseClassName} border-cooltura-lime/80 bg-cooltura-lime text-cooltura-dark shadow-cooltura hover:-translate-y-0.5 hover:brightness-105`;
+    case 'warning':
+      return `${baseClassName} border-amber-300 bg-amber-50 text-amber-900 hover:-translate-y-0.5 hover:border-amber-400 hover:bg-amber-100`;
+    case 'danger':
+      return `${baseClassName} border-rose-300 bg-rose-50 text-rose-900 hover:-translate-y-0.5 hover:border-rose-400 hover:bg-rose-100`;
+    case 'secondary':
+    default:
+      return `${baseClassName} border-slate-300 bg-slate-900 text-white hover:-translate-y-0.5 hover:border-slate-700 hover:bg-slate-800`;
+  }
+};
+
+const DisabledReasonTooltip = ({ reason }: { reason: string }) => {
+  return (
+    <div className="pointer-events-none absolute left-1/2 top-full z-20 hidden w-72 -translate-x-1/2 pt-2 group-hover:block">
+      <div className="rounded-xl border border-white/12 bg-[#111315] px-3 py-2 text-xs font-medium leading-5 text-cooltura-light shadow-2xl">
+        {reason}
+      </div>
+    </div>
+  );
+};
+
+type ActionButtonProps = {
+  tone: ActionTone;
+  disabled?: boolean;
+  disabledReason?: string | null;
+  onClick: () => void;
+  children: ReactNode;
+};
+
+const ActionButton = ({
+  tone,
+  disabled = false,
+  disabledReason,
+  onClick,
+  children
+}: ActionButtonProps) => {
+  const tooltip = disabled ? disabledReason?.trim() ?? '' : '';
+
+  return (
+    <div className="group relative inline-flex">
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-disabled={disabled}
+        className={actionButtonClassName(tone, disabled)}
+      >
+        {children}
+      </button>
+      {tooltip ? <DisabledReasonTooltip reason={tooltip} /> : null}
+    </div>
+  );
+};
+
 export function SurveyOperationsDashboard({
   companySlug,
   companyName,
@@ -143,6 +211,11 @@ export function SurveyOperationsDashboard({
   const [isClosingSurvey, setIsClosingSurvey] = useState(false);
   const [isFinalizingSurvey, setIsFinalizingSurvey] = useState(false);
   const [isSendingInvitations, setIsSendingInvitations] = useState(false);
+  const participantTotal = operationsSummary?.participants.total ?? 0;
+  const participantsWithEmail = operationsSummary?.participants.withEmail ?? 0;
+  const hasParticipantSummary = Boolean(operationsSummary);
+  const hasParticipants = participantTotal > 0;
+  const hasParticipantsWithEmail = participantsWithEmail > 0;
 
   const canImportParticipants = Boolean(
     canManage &&
@@ -153,6 +226,7 @@ export function SurveyOperationsDashboard({
   );
   const canScheduleInitialSend = Boolean(
     canManage &&
+      hasParticipants &&
       survey.lifecycle.canScheduleInitialSend &&
       !isSchedulingSend &&
       !isClosingSurvey &&
@@ -174,12 +248,77 @@ export function SurveyOperationsDashboard({
   );
   const canSendInvitationsNow = Boolean(
     canManage &&
-      isSurveyImportEnabled(survey.status) &&
+      Boolean(survey.initialSendScheduledAt) &&
+      hasParticipantsWithEmail &&
       !survey.lifecycle.ended &&
       !isSendingInvitations &&
       !isClosingSurvey &&
       !isFinalizingSurvey
   );
+
+  const importDisabledReason = !canManage
+    ? 'Solo ADMIN puede importar participantes en esta campaña.'
+    : survey.lifecycle.finalized
+      ? 'La encuesta ya está finalizada y no admite nuevas importaciones.'
+      : survey.lifecycle.ended
+        ? 'La ventana de la encuesta ya terminó.'
+        : isClosingSurvey || isFinalizingSurvey
+          ? 'Espera a que termine la transición actual de la encuesta.'
+          : null;
+
+  const scheduleDisabledReason = !canManage
+    ? 'Solo ADMIN puede programar el envío inicial.'
+    : !hasParticipantSummary
+      ? 'Actualiza el resumen para validar los participantes disponibles.'
+      : !hasParticipants
+        ? 'Importa al menos un participante antes de programar el envío inicial.'
+        : !survey.lifecycle.canScheduleInitialSend
+          ? survey.initialSendScheduledAt
+            ? 'El envío inicial ya fue programado para esta campaña.'
+            : 'Esta campaña ya no puede programar un envío inicial en su estado actual.'
+          : isClosingSurvey || isFinalizingSurvey
+            ? 'Espera a que termine la transición actual de la encuesta.'
+            : null;
+
+  const sendDisabledReason = !canManage
+    ? 'Solo ADMIN puede enviar invitaciones.'
+    : !survey.initialSendScheduledAt
+      ? 'Programa primero el envío inicial para habilitar este paso.'
+      : !hasParticipantSummary
+        ? 'Actualiza el resumen para validar correos disponibles.'
+        : !hasParticipantsWithEmail
+          ? hasParticipants
+            ? 'No hay participantes activos con correo electrónico disponible.'
+            : 'Importa participantes con correo antes de enviar invitaciones.'
+          : survey.lifecycle.ended
+            ? 'La ventana de la encuesta ya terminó.'
+            : isClosingSurvey || isFinalizingSurvey
+              ? 'Espera a que termine la transición actual de la encuesta.'
+              : null;
+
+  const closeDisabledReason = !canManage
+    ? 'Solo ADMIN puede cerrar la encuesta.'
+    : survey.lifecycle.state === 'DRAFT'
+      ? 'Programa primero el envío inicial para habilitar el cierre manual.'
+      : survey.lifecycle.state === 'SCHEDULED'
+        ? 'El cierre manual se habilita cuando la encuesta entra en estado activa.'
+        : survey.lifecycle.state === 'FINALIZED'
+          ? 'La encuesta ya fue finalizada.'
+          : isSchedulingSend || isFinalizingSurvey
+            ? 'Espera a que termine la operación en curso.'
+            : null;
+
+  const finalizeDisabledReason = !canManage
+    ? 'Solo ADMIN puede finalizar la encuesta.'
+    : survey.lifecycle.state === 'DRAFT' || survey.lifecycle.state === 'SCHEDULED'
+      ? 'Debes cerrar la encuesta antes de finalizarla.'
+      : survey.lifecycle.state === 'ACTIVE'
+        ? 'Debes cerrar la encuesta antes de finalizarla.'
+        : survey.lifecycle.state === 'FINALIZED'
+          ? 'La encuesta ya está finalizada.'
+          : isSchedulingSend || isClosingSurvey
+            ? 'Espera a que termine la operación en curso.'
+            : null;
 
   const completionPercent = useMemo(() => {
     return toCompletionPercent(operationsSummary?.responses.completionRate ?? 0);
@@ -373,76 +512,80 @@ export function SurveyOperationsDashboard({
           <SurveyStatusBadge status={survey.status} lifecycleState={survey.lifecycle.state} />
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            type="button"
+        <p className="mt-4 text-xs font-medium text-slate-500">
+          Flujo recomendado: importa participantes, programa el envío inicial y luego envía invitaciones.
+        </p>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <ActionButton
+            tone="primary"
             onClick={() => setIsParticipantImportModalOpen(true)}
             disabled={!canImportParticipants}
-            className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark disabled:cursor-not-allowed disabled:bg-slate-300"
+            disabledReason={importDisabledReason}
           >
             Importar participantes
-          </button>
-          <button
-            type="button"
-            onClick={handleSendInvitationsNow}
-            disabled={!canSendInvitationsNow}
-            className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark disabled:cursor-not-allowed disabled:bg-slate-300"
-          >
-            {isSendingInvitations ? 'Enviando...' : 'Enviar ahora'}
-          </button>
-          <button
-            type="button"
+          </ActionButton>
+          <ActionButton
+            tone="secondary"
             onClick={openScheduleModal}
             disabled={!canScheduleInitialSend}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100"
+            disabledReason={scheduleDisabledReason}
           >
             Programar envío inicial
-          </button>
-          <button
-            type="button"
+          </ActionButton>
+          <ActionButton
+            tone="primary"
+            onClick={handleSendInvitationsNow}
+            disabled={!canSendInvitationsNow}
+            disabledReason={sendDisabledReason}
+          >
+            {isSendingInvitations ? 'Enviando invitaciones...' : 'Enviar invitaciones ahora'}
+          </ActionButton>
+          <ActionButton
+            tone="warning"
             onClick={handleCloseSurvey}
             disabled={!canCloseSurvey}
-            className="rounded-lg border border-amber-300 px-4 py-2 text-sm font-medium text-amber-800 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+            disabledReason={closeDisabledReason}
           >
             Cerrar encuesta
-          </button>
-          <button
-            type="button"
+          </ActionButton>
+          <ActionButton
+            tone="danger"
             onClick={handleFinalizeSurvey}
             disabled={!canFinalizeSurvey}
-            className="rounded-lg border border-rose-300 px-4 py-2 text-sm font-medium text-rose-800 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+            disabledReason={finalizeDisabledReason}
           >
             Finalizar encuesta
-          </button>
+          </ActionButton>
           <button
             type="button"
             onClick={refreshSummary}
             disabled={isRefreshingSummary}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100"
+            className={actionButtonClassName('secondary', isRefreshingSummary)}
           >
             {isRefreshingSummary ? 'Actualizando...' : 'Actualizar resumen'}
           </button>
           <Link
             href={`/admin/companies/${companySlug}/surveys/${survey.slug}`}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className={actionButtonClassName('secondary', false)}
           >
             Abrir editor completo
           </Link>
           <Link
             href={`/admin/companies/${companySlug}/surveys/${survey.slug}/reporting`}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className={actionButtonClassName('secondary', false)}
           >
             Ver reportes
           </Link>
           <Link
             href={`/admin/companies/${companySlug}/surveys/history`}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className={actionButtonClassName('secondary', false)}
           >
             Historial
           </Link>
           <Link
             href={`/admin/companies/${companySlug}/surveys`}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className={actionButtonClassName('secondary', false)}
           >
             Volver a encuestas
           </Link>
@@ -487,7 +630,7 @@ export function SurveyOperationsDashboard({
             </p>
             <p>
               <span className="font-medium">Recordatorios:</span>{' '}
-              {survey.remindersLockedAt ? 'Confirmados (bloqueados)' : 'Sin confirmar'}
+              {survey.reminderSchedules.length > 0 ? 'Configurados' : 'Sin configurar'}
             </p>
             <p>
               <span className="font-medium">Finalizada:</span>{' '}
@@ -644,7 +787,7 @@ export function SurveyOperationsDashboard({
             href={`/admin/companies/${companySlug}/surveys/${survey.slug}`}
             className="text-sm font-medium text-brand transition hover:text-brandDark"
           >
-            Configurar recordatorios en editor
+            Editar recordatorios
           </Link>
         </div>
 
@@ -736,7 +879,7 @@ export function SurveyOperationsDashboard({
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-ink">Programar envío inicial</h3>
             <p className="text-sm text-slate-600">
-              Este envío habilita la campaña y permite iniciar la operación con participantes.
+              Programa este paso después de cargar participantes para dejar lista la campaña.
             </p>
             <div className="space-y-1">
               <label htmlFor="initial-send-at" className="text-sm font-medium text-slate-700">
@@ -762,7 +905,7 @@ export function SurveyOperationsDashboard({
               <button
                 type="button"
                 onClick={handleScheduleInitialSend}
-                className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brandDark disabled:bg-slate-300"
+                className="rounded-lg border border-cooltura-lime/80 bg-cooltura-lime px-3 py-1.5 text-sm font-medium text-cooltura-dark transition hover:brightness-105 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-500"
                 disabled={isSchedulingSend}
               >
                 {isSchedulingSend ? 'Guardando...' : 'Confirmar envío'}

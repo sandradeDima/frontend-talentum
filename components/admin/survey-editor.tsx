@@ -189,26 +189,50 @@ const normalizeOptionalValue = (value: string | null | undefined): string | null
   return trimmed.length > 0 ? trimmed : null;
 };
 
-const makeReminderRows = (survey: SurveyCampaignDetail | null): ReminderRow[] => {
-  if (!survey || survey.reminders.length === 0) {
+const makeEditableReminderRows = (survey: SurveyCampaignDetail | null): ReminderRow[] => {
+  if (!survey) {
     return [{ id: crypto.randomUUID(), scheduledAt: '' }];
   }
 
-  return survey.reminders.map((reminder) => ({
-    id: reminder.id,
-    scheduledAt: toDateTimeLocalValue(reminder.scheduledAt)
-  }));
+  const now = Date.now();
+  const futureSchedules = survey.reminderSchedules.filter((schedule) => {
+    const scheduledAt = new Date(schedule.scheduledAt);
+    return !Number.isNaN(scheduledAt.getTime()) && scheduledAt.getTime() > now;
+  });
+
+  if (futureSchedules.length > 0) {
+    return futureSchedules.map((schedule) => ({
+      id: schedule.id,
+      scheduledAt: toDateTimeLocalValue(schedule.scheduledAt)
+    }));
+  }
+
+  const futureReminders = survey.reminders.filter((reminder) => {
+    const scheduledAt = new Date(reminder.scheduledAt);
+    return !Number.isNaN(scheduledAt.getTime()) && scheduledAt.getTime() > now;
+  });
+
+  if (futureReminders.length > 0) {
+    return futureReminders.map((reminder) => ({
+      id: reminder.id,
+      scheduledAt: toDateTimeLocalValue(reminder.scheduledAt)
+    }));
+  }
+
+  return [{ id: crypto.randomUUID(), scheduledAt: '' }];
 };
 
 const getApiErrorMessage = (error: unknown): string => {
   if (error instanceof ApiRequestError) {
     switch (error.mensajeTecnico) {
+      case 'SURVEY_PARTICIPANTS_REQUIRED_BEFORE_INITIAL_SEND':
+        return 'Importa participantes antes de programar el envío inicial.';
       case 'SURVEY_EXTRA_QUESTIONS_LOCKED':
         return 'Las preguntas opcionales ya no pueden editarse para esta encuesta.';
       case 'SURVEY_EDIT_WINDOW_CLOSED':
         return 'La encuesta ya inició y no admite cambios de configuración.';
       case 'SURVEY_REMINDERS_LOCKED':
-        return 'Los recordatorios ya fueron confirmados y quedaron bloqueados.';
+        return 'Los recordatorios ya no pueden editarse en este momento.';
       case 'SURVEY_INITIAL_SEND_REQUIRED':
         return 'Debes programar el envío inicial antes de configurar recordatorios.';
       case 'INVALID_SURVEY_SEND_SCHEDULE':
@@ -288,7 +312,7 @@ export function SurveyEditor({
   const [isScheduling, setIsScheduling] = useState(false);
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [reminderRows, setReminderRows] = useState<ReminderRow[]>(
-    makeReminderRows(initialSurvey ?? null)
+    makeEditableReminderRows(initialSurvey ?? null)
   );
   const [isSavingReminders, setIsSavingReminders] = useState(false);
   const [isParticipantImportModalOpen, setIsParticipantImportModalOpen] = useState(false);
@@ -317,12 +341,19 @@ export function SurveyEditor({
   const isEditLocked = isEditLockedByStatus || hasReachedStartWindow;
   const canEdit = canManage && !isEditLocked;
   const canEditExtraQuestions = canEdit && (mode === 'create' || surveyStatus === 'BORRADOR');
-  const hasLockedReminders = Boolean(survey?.remindersLockedAt);
+  const hasConfiguredReminders = Boolean(survey && survey.reminderSchedules.length > 0);
   const canImportParticipants = Boolean(
     mode === 'edit' &&
       survey &&
       canManage &&
       isSurveyImportEnabled(survey.status) &&
+      !hasSurveyEnded
+  );
+  const canManageReminders = Boolean(
+    mode === 'edit' &&
+      survey &&
+      canManage &&
+      Boolean(survey.initialSendScheduledAt) &&
       !hasSurveyEnded
   );
   const canCloseSurveyNow = Boolean(
@@ -552,7 +583,11 @@ export function SurveyEditor({
   };
 
   const openReminderModal = () => {
-    setReminderRows(makeReminderRows(survey));
+    if (!canManageReminders) {
+      return;
+    }
+
+    setReminderRows(makeEditableReminderRows(survey));
     setIsReminderModalOpen(true);
   };
 
@@ -615,9 +650,9 @@ export function SurveyEditor({
 
       setSurvey(updated);
       setFormState(toEditorInputFromSurvey(updated));
-      setReminderRows(makeReminderRows(updated));
+      setReminderRows(makeEditableReminderRows(updated));
       setIsReminderModalOpen(false);
-      showToast('success', 'Recordatorios programados y bloqueados.');
+      showToast('success', 'Recordatorios actualizados.');
       router.refresh();
     } catch (error) {
       showToast('error', getApiErrorMessage(error));
@@ -745,7 +780,7 @@ export function SurveyEditor({
             </p>
             <p>
               <span className="font-medium">Recordatorios:</span>{' '}
-              {hasLockedReminders ? 'Configuración confirmada (bloqueada)' : 'Sin confirmar'}
+              {hasConfiguredReminders ? 'Configurados' : 'Sin configurar'}
             </p>
           </div>
         ) : null}
@@ -759,7 +794,7 @@ export function SurveyEditor({
 
       {isEditLocked ? (
         <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-          La fecha de inicio ya fue alcanzada o la encuesta está finalizada. La configuración quedó en modo solo lectura.
+          La fecha de inicio ya fue alcanzada o la encuesta está finalizada. El contenido quedó en modo solo lectura, pero aún puedes gestionar participantes y recordatorios mientras la campaña siga vigente.
         </p>
       ) : null}
 
@@ -1115,7 +1150,7 @@ export function SurveyEditor({
               type="button"
               onClick={handleSave}
               disabled={isSaving || !canEdit}
-              className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-70"
+              className="rounded-lg border border-cooltura-lime/80 bg-cooltura-lime px-4 py-2 text-sm font-medium text-cooltura-dark transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSaving
                 ? 'Guardando...'
@@ -1179,9 +1214,7 @@ export function SurveyEditor({
               type="button"
               onClick={openReminderModal}
               disabled={
-                isEditLocked ||
-                hasLockedReminders ||
-                !survey.initialSendScheduledAt
+                !canManageReminders
               }
               className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
             >
@@ -1218,10 +1251,9 @@ export function SurveyEditor({
         survey &&
         canManage &&
         !canImportParticipants &&
-        survey.status === 'BORRADOR' ? (
+        survey.status === 'FINALIZADA' ? (
           <p className="mt-3 text-xs text-slate-500">
-            Para importar participantes, primero debes salir del estado BORRADOR y programar el
-            envío inicial.
+            La encuesta ya está finalizada y no admite nuevas importaciones.
           </p>
         ) : null}
 
@@ -1235,9 +1267,9 @@ export function SurveyEditor({
           </p>
         ) : null}
 
-        {mode === 'edit' && hasLockedReminders ? (
-          <p className="mt-3 text-xs text-amber-700">
-            Los recordatorios ya fueron confirmados y el botón quedó deshabilitado.
+        {mode === 'edit' && survey && canManageReminders ? (
+          <p className="mt-3 text-xs text-slate-500">
+            Puedes actualizar recordatorios futuros aunque la encuesta ya esté en curso. Los ya enviados se mantienen en el historial.
           </p>
         ) : null}
 
@@ -1358,7 +1390,7 @@ export function SurveyEditor({
               type="button"
               onClick={handleScheduleSend}
               disabled={isScheduling}
-              className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-70"
+              className="rounded-lg border border-cooltura-lime/80 bg-cooltura-lime px-4 py-2 text-sm font-medium text-cooltura-dark transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isScheduling ? 'Programando...' : 'Programar'}
             </button>
@@ -1378,7 +1410,7 @@ export function SurveyEditor({
         <Modal>
           <h3 className="text-lg font-semibold text-ink">Programar recordatorios</h3>
           <p className="mt-1 text-sm text-slate-600">
-            Configura múltiples recordatorios para quienes no iniciaron o no terminaron.
+            Configura recordatorios futuros para quienes no iniciaron o no terminaron. Los ya enviados permanecen en el historial.
           </p>
 
           <div className="mt-4 space-y-3">
@@ -1424,7 +1456,7 @@ export function SurveyEditor({
               type="button"
               onClick={handleConfirmReminders}
               disabled={isSavingReminders}
-              className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-70"
+              className="rounded-lg border border-cooltura-lime/80 bg-cooltura-lime px-4 py-2 text-sm font-medium text-cooltura-dark transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSavingReminders ? 'Confirmando...' : 'Confirmar programación'}
             </button>

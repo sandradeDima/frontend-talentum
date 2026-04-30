@@ -36,8 +36,8 @@ test('resolveRespondentImportMimeType rejects unsupported files', () => {
   assert.equal(mimeType, null);
 });
 
-test('isSurveyImportEnabled only allows campaigns outside BORRADOR/FINALIZADA', () => {
-  assert.equal(isSurveyImportEnabled('BORRADOR'), false);
+test('isSurveyImportEnabled allows imports until the campaign is finalized', () => {
+  assert.equal(isSurveyImportEnabled('BORRADOR'), true);
   assert.equal(isSurveyImportEnabled('CREADA'), true);
   assert.equal(isSurveyImportEnabled('EN_PROCESO'), true);
   assert.equal(isSurveyImportEnabled('FINALIZADA'), false);
