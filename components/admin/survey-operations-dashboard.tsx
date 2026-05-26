@@ -565,12 +565,14 @@ export function SurveyOperationsDashboard({
           >
             {isRefreshingSummary ? 'Actualizando...' : 'Actualizar resumen'}
           </button>
-          <Link
-            href={`/admin/companies/${companySlug}/surveys/${survey.slug}`}
-            className={actionButtonClassName('secondary', false)}
-          >
-            Abrir editor completo
-          </Link>
+          {canManage ? (
+            <Link
+              href={`/admin/companies/${companySlug}/surveys/${survey.slug}`}
+              className={actionButtonClassName('secondary', false)}
+            >
+              Abrir editor completo
+            </Link>
+          ) : null}
           <Link
             href={`/admin/companies/${companySlug}/surveys/${survey.slug}/reporting`}
             className={actionButtonClassName('secondary', false)}

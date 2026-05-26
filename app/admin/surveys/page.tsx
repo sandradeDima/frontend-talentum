@@ -167,7 +167,10 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {result.rows.map((row) => (
+                  {result.rows.map((row) => {
+                    const canViewResults = row.status !== 'BORRADOR';
+
+                    return (
                     <tr key={row.id} className="align-top">
                       <td className="px-4 py-3 font-medium text-ink">{row.name}</td>
                       <td className="px-4 py-3 text-slate-700">
@@ -195,12 +198,14 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex justify-end gap-2">
-                          <Link
-                            href={`/admin/companies/${row.company.slug}/surveys/${row.slug}/reporting`}
-                            className="admin-button-secondary px-3 py-1.5 text-xs"
-                          >
-                            Resultados
-                          </Link>
+                          {canViewResults ? (
+                            <Link
+                              href={`/admin/companies/${row.company.slug}/surveys/${row.slug}/reporting`}
+                              className="admin-button-secondary px-3 py-1.5 text-xs"
+                            >
+                              Resultados
+                            </Link>
+                          ) : null}
                           <Link
                             href={`/admin/companies/${row.company.slug}/surveys/${row.slug}/operations`}
                             className="admin-button-secondary px-3 py-1.5 text-xs"
@@ -216,7 +221,8 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  );
+                  })}
                 </tbody>
               </table>
             </div>

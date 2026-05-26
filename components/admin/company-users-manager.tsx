@@ -569,7 +569,7 @@ export function CompanyUsersManager({
               <button
                 type="submit"
                 disabled={isBusy}
-                className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-70"
+                className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-cooltura-dark transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isBusy ? 'Guardando...' : editingUser ? 'Guardar' : 'Crear usuario'}
               </button>

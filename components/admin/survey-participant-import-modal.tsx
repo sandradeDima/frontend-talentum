@@ -414,7 +414,7 @@ export function SurveyParticipantImportModal({
             type="button"
             onClick={() => void runImport(true)}
             disabled={isValidating || isImporting}
-            className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-70"
+            className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-cooltura-dark transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isValidating ? 'Validando archivo...' : 'Validar archivo'}
           </button>

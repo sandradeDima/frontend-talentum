@@ -549,7 +549,7 @@ export function CompanyForm({
           <button
             type="submit"
             disabled={isSubmitting || isUploadingLogo || isFormReadOnly}
-            className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-70"
+            className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-cooltura-dark transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSubmitting
               ? 'Guardando...'

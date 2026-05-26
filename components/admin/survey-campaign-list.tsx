@@ -45,6 +45,7 @@ export function SurveyCampaignList({ companySlug, rows, canManage }: SurveyCampa
           <tbody className="divide-y divide-slate-100">
             {rows.map((survey) => {
               const publicLink = `${env.appUrl}${survey.genericLinkPath}`;
+              const canViewResults = survey.status !== 'BORRADOR';
 
               return (
                 <tr key={survey.id} className="align-top">
@@ -82,12 +83,14 @@ export function SurveyCampaignList({ companySlug, rows, canManage }: SurveyCampa
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2 whitespace-nowrap">
-                      <Link
-                        href={`/admin/companies/${companySlug}/surveys/${survey.slug}/reporting`}
-                        className="admin-button-secondary min-w-24 px-3 py-1.5 text-xs"
-                      >
-                        Resultados
-                      </Link>
+                      {canViewResults ? (
+                        <Link
+                          href={`/admin/companies/${companySlug}/surveys/${survey.slug}/reporting`}
+                          className="admin-button-secondary min-w-24 px-3 py-1.5 text-xs"
+                        >
+                          Resultados
+                        </Link>
+                      ) : null}
                       <Link
                         href={`/admin/companies/${companySlug}/surveys/${survey.slug}/operations`}
                         className="admin-button-secondary min-w-24 px-3 py-1.5 text-xs"

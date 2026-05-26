@@ -205,7 +205,7 @@ export function RespondentSurveyWelcomeStep({
           type="button"
           onClick={onStart}
           disabled={isStarting}
-          className="w-full rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+          className="w-full rounded-lg bg-brand px-4 py-2 text-sm font-medium text-cooltura-dark transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
         >
           {isStarting ? 'Iniciando encuesta...' : 'Iniciar encuesta'}
         </button>

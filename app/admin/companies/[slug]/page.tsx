@@ -77,23 +77,23 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
           </nav>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Slug</p>
-              <p className="text-sm font-medium text-slate-800">{company.slug}</p>
+            <div className="rounded-lg border border-white/10 bg-white/6 px-3 py-2">
+              <p className="text-xs uppercase tracking-wide text-cooltura-light/62">Slug</p>
+              <p className="text-sm font-medium text-cooltura-light">{company.slug}</p>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
+            <div className="rounded-lg border border-white/10 bg-white/6 px-3 py-2">
+              <p className="text-xs uppercase tracking-wide text-cooltura-light/62">
                 Correo de contacto
               </p>
-              <p className="text-sm font-medium text-slate-800">{company.contactEmail}</p>
+              <p className="text-sm font-medium text-cooltura-light">{company.contactEmail}</p>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Trabajadores</p>
-              <p className="text-sm font-medium text-slate-800">{company.workerCount}</p>
+            <div className="rounded-lg border border-white/10 bg-white/6 px-3 py-2">
+              <p className="text-xs uppercase tracking-wide text-cooltura-light/62">Trabajadores</p>
+              <p className="text-sm font-medium text-cooltura-light">{company.workerCount}</p>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Creación</p>
-              <p className="text-sm font-medium text-slate-800">
+            <div className="rounded-lg border border-white/10 bg-white/6 px-3 py-2">
+              <p className="text-xs uppercase tracking-wide text-cooltura-light/62">Creación</p>
+              <p className="text-sm font-medium text-cooltura-light">
                 {dateFormatter.format(new Date(company.createdAt))}
               </p>
             </div>

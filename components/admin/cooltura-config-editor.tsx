@@ -205,7 +205,7 @@ export function CoolturaConfigEditor({ initialConfig }: Props) {
           type="button"
           onClick={handleSave}
           disabled={isSaving}
-          className="rounded-lg bg-brand px-5 py-2 text-sm font-medium text-white transition hover:bg-brandDark disabled:opacity-60"
+          className="rounded-lg bg-brand px-5 py-2 text-sm font-medium text-cooltura-dark transition hover:bg-brandDark disabled:opacity-60"
         >
           {isSaving ? 'Guardando...' : 'Guardar cambios'}
         </button>
