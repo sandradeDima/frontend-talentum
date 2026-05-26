@@ -63,7 +63,7 @@ export function AdminModal({
 
   return createPortal(
     <div
-      className="admin-modal-overlay"
+      className="admin-modal-theme admin-modal-overlay"
       onMouseDown={(event) => {
         if (dismissible && event.target === event.currentTarget) {
           onClose();
