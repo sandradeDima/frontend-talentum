@@ -13,6 +13,7 @@ import type {
   ImportSurveyRespondentsResult,
   ImportSurveyRespondentRowError
 } from '@/types/survey-operations';
+import { AdminModal } from './admin-modal';
 
 const MAX_IMPORT_FILE_BYTES = 10 * 1024 * 1024;
 const MAX_ERROR_ROWS_TO_RENDER = 200;
@@ -263,10 +264,10 @@ export function SurveyParticipantImportModal({
       : validationResult?.errors ?? [];
   const displayedErrors = errorSource.slice(0, MAX_ERROR_ROWS_TO_RENDER);
   const hiddenErrorsCount = Math.max(0, errorSource.length - displayedErrors.length);
+  const dismissible = !isValidating && !isImporting;
 
   return (
-    <div className="admin-modal-overlay">
-      <div className="admin-modal-shell admin-modal-shell-lg">
+    <AdminModal onClose={onClose} size="lg" dismissible={dismissible}>
         <header className="space-y-2">
           <h3 className="text-lg font-semibold text-ink">Importar participantes</h3>
           <p className="text-sm text-slate-600">
@@ -440,7 +441,7 @@ export function SurveyParticipantImportModal({
           <button
             type="button"
             onClick={onClose}
-            disabled={isValidating || isImporting}
+            disabled={!dismissible}
             className="ml-auto rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
           >
             Cerrar
@@ -599,7 +600,6 @@ export function SurveyParticipantImportModal({
             </div>
           </section>
         ) : null}
-      </div>
-    </div>
+    </AdminModal>
   );
 }

@@ -28,6 +28,7 @@ import type {
   SurveyCampaignStatus,
   SurveyCampaignUpsertInput
 } from '@/types/survey';
+import { AdminModal } from './admin-modal';
 import { SurveyParticipantImportModal } from './survey-participant-import-modal';
 import { SurveyStatusBadge } from './survey-status-badge';
 
@@ -280,16 +281,6 @@ const sanitizePayload = (input: SurveyCampaignUpsertInput): SurveyCampaignUpsert
   closingText: input.closingText.trim(),
   tutorialVideoUrl: normalizeOptionalValue(input.tutorialVideoUrl)
 });
-
-const Modal = ({ children }: { children: ReactNode }) => {
-  return (
-    <div className="admin-modal-overlay">
-      <div className="admin-modal-shell admin-modal-shell-sm">
-        {children}
-      </div>
-    </div>
-  );
-};
 
 export function SurveyEditor({
   mode,
@@ -1369,7 +1360,10 @@ export function SurveyEditor({
       ) : null}
 
       {isScheduleModalOpen ? (
-        <Modal>
+        <AdminModal
+          onClose={() => setIsScheduleModalOpen(false)}
+          dismissible={!isScheduling}
+        >
           <h3 className="text-lg font-semibold text-ink">Programar envíos</h3>
           <p className="mt-1 text-sm text-slate-600">
             Define la fecha y hora del envío inicial de invitaciones.
@@ -1403,11 +1397,14 @@ export function SurveyEditor({
               Volver a revisar
             </button>
           </div>
-        </Modal>
+        </AdminModal>
       ) : null}
 
       {isReminderModalOpen ? (
-        <Modal>
+        <AdminModal
+          onClose={() => setIsReminderModalOpen(false)}
+          dismissible={!isSavingReminders}
+        >
           <h3 className="text-lg font-semibold text-ink">Programar recordatorios</h3>
           <p className="mt-1 text-sm text-slate-600">
             Configura recordatorios futuros para quienes no iniciaron o no terminaron. Los ya enviados permanecen en el historial.
@@ -1469,7 +1466,7 @@ export function SurveyEditor({
               Volver a revisar
             </button>
           </div>
-        </Modal>
+        </AdminModal>
       ) : null}
 
       {mode === 'edit' && survey ? (

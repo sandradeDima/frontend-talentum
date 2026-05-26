@@ -260,18 +260,45 @@ a {
   }
 
   .admin-modal-overlay {
-    @apply fixed inset-0 z-40 flex overflow-y-auto p-3 backdrop-blur-md sm:p-4;
-    align-items: flex-start;
+    @apply fixed inset-0 z-[120] flex overflow-y-auto p-4 backdrop-blur-md sm:p-6;
+    align-items: center;
     justify-content: center;
-    background: rgba(7, 7, 8, 0.72);
+    background:
+      radial-gradient(circle at top, rgba(193, 250, 0, 0.08), transparent 24%),
+      rgba(7, 7, 8, 0.8);
   }
 
   .admin-modal-shell {
-    @apply my-auto w-full overflow-y-auto rounded-[1.75rem] border p-5 shadow-cooltura;
-    max-height: calc(100vh - 1.5rem);
-    border-color: rgba(255, 255, 255, 0.12);
-    background: rgba(27, 27, 31, 0.96);
+    @apply relative w-full overflow-hidden rounded-[1.9rem] border shadow-cooltura;
+    max-height: calc(100vh - 2rem);
+    border-color: rgba(255, 255, 255, 0.14);
+    background: linear-gradient(180deg, rgba(31, 31, 35, 0.98) 0%, rgba(22, 22, 25, 0.98) 100%);
+    box-shadow:
+      0 32px 80px rgba(0, 0, 0, 0.54),
+      0 0 0 1px rgba(255, 255, 255, 0.04);
     overscroll-behavior: contain;
+  }
+
+  .admin-modal-body {
+    @apply overflow-y-auto px-5 pb-5 pt-16 sm:px-6 sm:pb-6 sm:pt-[4.5rem];
+    max-height: calc(100vh - 2rem);
+  }
+
+  .admin-modal-close {
+    @apply absolute right-4 top-4 inline-flex min-h-10 items-center justify-center rounded-full border px-3.5 py-1.5 text-[0.68rem] uppercase tracking-[0.16em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cooltura-lime;
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(243, 242, 241, 0.82);
+  }
+
+  .admin-modal-close:hover {
+    border-color: rgba(193, 250, 0, 0.45);
+    color: #c1fa00;
+  }
+
+  .admin-modal-close:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
   }
 
   .admin-modal-shell-sm {
@@ -280,16 +307,6 @@ a {
 
   .admin-modal-shell-lg {
     max-width: 72rem;
-  }
-
-  @media (min-width: 640px) {
-    .admin-modal-overlay {
-      align-items: center;
-    }
-
-    .admin-modal-shell {
-      max-height: calc(100vh - 2rem);
-    }
   }
 
   .admin-kicker {

@@ -28,6 +28,7 @@ import type {
   ImportSurveyRespondentsResult,
   SurveyCampaignOperationsSummary
 } from '@/types/survey-operations';
+import { AdminModal } from './admin-modal';
 import { SurveyParticipantImportModal } from './survey-participant-import-modal';
 import { SurveyStatusBadge } from './survey-status-badge';
 
@@ -110,16 +111,6 @@ const getApiErrorMessage = (error: unknown): string => {
   }
 
   return extractErrorMessage(error);
-};
-
-const Modal = ({ children }: { children: ReactNode }) => {
-  return (
-    <div className="admin-modal-overlay">
-      <div className="admin-modal-shell admin-modal-shell-sm">
-        {children}
-      </div>
-    </div>
-  );
 };
 
 type ActionTone = 'primary' | 'secondary' | 'warning' | 'danger';
@@ -877,7 +868,10 @@ export function SurveyOperationsDashboard({
       </article>
 
       {isScheduleModalOpen ? (
-        <Modal>
+        <AdminModal
+          onClose={() => setIsScheduleModalOpen(false)}
+          dismissible={!isSchedulingSend}
+        >
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-ink">Programar envío inicial</h3>
             <p className="text-sm text-slate-600">
@@ -914,7 +908,7 @@ export function SurveyOperationsDashboard({
               </button>
             </div>
           </div>
-        </Modal>
+        </AdminModal>
       ) : null}
 
       <SurveyParticipantImportModal

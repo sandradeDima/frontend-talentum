@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import {
   createCompanyUserClient,
   deactivateCompanyUserClient,
@@ -16,6 +16,7 @@ import type {
   CompanyUserRow,
   UpdateCompanyUserInput
 } from '@/types/company-user';
+import { AdminModal } from './admin-modal';
 
 type CompanyUsersManagerProps = {
   companySlug: string;
@@ -87,29 +88,6 @@ const mapApiError = (error: unknown): string => {
   }
 
   return extractErrorMessage(error);
-};
-
-const Modal = ({
-  children,
-  onClose
-}: {
-  children: ReactNode;
-  onClose: () => void;
-}) => {
-  return (
-    <div className="admin-modal-overlay">
-      <div className="admin-modal-shell admin-modal-shell-sm">
-        {children}
-        <button
-          type="button"
-          onClick={onClose}
-          className="admin-button-secondary mt-4 px-3 py-1.5 text-xs"
-        >
-          Cerrar
-        </button>
-      </div>
-    </div>
-  );
 };
 
 export function CompanyUsersManager({
@@ -477,7 +455,7 @@ export function CompanyUsersManager({
       )}
 
       {isModalOpen ? (
-        <Modal onClose={resetModal}>
+        <AdminModal onClose={resetModal} dismissible={!isBusy}>
           <h3 className="admin-title text-[0.95rem] sm:text-[1.05rem]">
             {editingUser ? 'Editar usuario' : 'Agregar usuario'}
           </h3>
@@ -487,85 +465,124 @@ export function CompanyUsersManager({
               : 'Se creará en estado pendiente y se enviará invitación por correo.'}
           </p>
 
-          <form onSubmit={handleSubmitForm} className="mt-4 space-y-3">
+          <form onSubmit={handleSubmitForm} className="mt-5 space-y-5">
             <div className="grid gap-3 md:grid-cols-2">
-              <input
-                value={formState.name}
-                onChange={(event) =>
-                  setFormState((previous) => ({ ...previous, name: event.target.value }))
-                }
-                placeholder="Nombre"
-                required
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
-              />
-              <input
-                value={formState.lastName}
-                onChange={(event) =>
-                  setFormState((previous) => ({ ...previous, lastName: event.target.value }))
-                }
-                placeholder="Apellido"
-                required
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
-              />
+              <div className="space-y-1.5">
+                <label htmlFor="company-user-name" className="admin-label">
+                  Nombre
+                </label>
+                <input
+                  id="company-user-name"
+                  value={formState.name}
+                  onChange={(event) =>
+                    setFormState((previous) => ({ ...previous, name: event.target.value }))
+                  }
+                  placeholder="Nombre"
+                  required
+                  className="admin-input"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="company-user-last-name" className="admin-label">
+                  Apellido
+                </label>
+                <input
+                  id="company-user-last-name"
+                  value={formState.lastName}
+                  onChange={(event) =>
+                    setFormState((previous) => ({ ...previous, lastName: event.target.value }))
+                  }
+                  placeholder="Apellido"
+                  required
+                  className="admin-input"
+                />
+              </div>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
-              <input
-                type="email"
-                value={formState.email}
-                onChange={(event) =>
-                  setFormState((previous) => ({ ...previous, email: event.target.value }))
-                }
-                placeholder="Email"
-                required
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
-              />
-              <input
-                value={formState.phone}
-                onChange={(event) =>
-                  setFormState((previous) => ({ ...previous, phone: event.target.value }))
-                }
-                placeholder="Teléfono"
-                required
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
-              />
+              <div className="space-y-1.5">
+                <label htmlFor="company-user-email" className="admin-label">
+                  Email
+                </label>
+                <input
+                  id="company-user-email"
+                  type="email"
+                  value={formState.email}
+                  onChange={(event) =>
+                    setFormState((previous) => ({ ...previous, email: event.target.value }))
+                  }
+                  placeholder="Email"
+                  required
+                  className="admin-input"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="company-user-phone" className="admin-label">
+                  Telefono
+                </label>
+                <input
+                  id="company-user-phone"
+                  value={formState.phone}
+                  onChange={(event) =>
+                    setFormState((previous) => ({ ...previous, phone: event.target.value }))
+                  }
+                  placeholder="Telefono"
+                  required
+                  className="admin-input"
+                />
+              </div>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
-              <select
-                value="CLIENT_ADMIN"
-                disabled
-                className="w-full rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-sm text-slate-600"
-              >
-                <option value="CLIENT_ADMIN">{getUserRoleLabel('CLIENT_ADMIN')}</option>
-              </select>
+              <div className="space-y-1.5">
+                <label htmlFor="company-user-role" className="admin-label">
+                  Rol
+                </label>
+                <select id="company-user-role" value="CLIENT_ADMIN" disabled className="admin-select">
+                  <option value="CLIENT_ADMIN">{getUserRoleLabel('CLIENT_ADMIN')}</option>
+                </select>
+              </div>
 
-              <select
-                value={formState.activationStatus}
-                onChange={(event) =>
-                  setFormState((previous) => ({
-                    ...previous,
-                    activationStatus: event.target.value as CompanyUserActivationStatus
-                  }))
-                }
-                disabled={!editingUser}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2 disabled:bg-slate-100"
-              >
-                {statusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <div className="space-y-1.5">
+                <label htmlFor="company-user-status" className="admin-label">
+                  Estado
+                </label>
+                <select
+                  id="company-user-status"
+                  value={formState.activationStatus}
+                  onChange={(event) =>
+                    setFormState((previous) => ({
+                      ...previous,
+                      activationStatus: event.target.value as CompanyUserActivationStatus
+                    }))
+                  }
+                  disabled={!editingUser}
+                  className="admin-select"
+                >
+                  {statusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {!editingUser ? (
-              <p className="text-xs text-slate-500">
+              <p className="admin-banner-warning text-xs">
                 El estado inicial siempre será pendiente de activación.
               </p>
             ) : null}
 
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={resetModal}
+                disabled={isBusy}
+                className="admin-button-secondary px-4 py-2 text-sm"
+              >
+                Cancelar
+              </button>
               <button
                 type="submit"
                 disabled={isBusy}
@@ -575,7 +592,7 @@ export function CompanyUsersManager({
               </button>
             </div>
           </form>
-        </Modal>
+        </AdminModal>
       ) : null}
     </section>
   );
