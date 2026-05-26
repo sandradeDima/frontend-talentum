@@ -9,6 +9,7 @@ import {
   updateCompanyUserClient
 } from '@/services/company-user.client';
 import { extractErrorMessage } from '@/lib/auth-shared';
+import { getUserRoleLabel } from '@/lib/user-role-label';
 import { ApiRequestError } from '@/types/api';
 import type {
   CompanyUserActivationStatus,
@@ -334,7 +335,7 @@ export function CompanyUsersManager({
         <div>
           <h2 className="admin-title text-[1rem] sm:text-[1.15rem]">Usuarios</h2>
           <p className="admin-subtitle mt-2">
-            Gestión de usuarios administrativos de la empresa (rol CLIENT_ADMIN).
+            Gestión de perfiles de empresa asignados a esta organización.
           </p>
         </div>
         {canManage ? (
@@ -379,7 +380,7 @@ export function CompanyUsersManager({
                     <td className="px-4 py-3 font-medium text-ink">{row.fullName}</td>
                     <td className="px-4 py-3 text-slate-700">{row.email}</td>
                     <td className="px-4 py-3 text-slate-700">{row.phone ?? 'Sin dato'}</td>
-                    <td className="px-4 py-3 text-slate-700">{row.role}</td>
+                    <td className="px-4 py-3 text-slate-700">{getUserRoleLabel(row.role)}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`admin-status-badge ${statusBadgeClassMap[row.activationStatus]}`}
@@ -536,7 +537,7 @@ export function CompanyUsersManager({
                 disabled
                 className="w-full rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-sm text-slate-600"
               >
-                <option value="CLIENT_ADMIN">CLIENT_ADMIN</option>
+                <option value="CLIENT_ADMIN">{getUserRoleLabel('CLIENT_ADMIN')}</option>
               </select>
 
               <select

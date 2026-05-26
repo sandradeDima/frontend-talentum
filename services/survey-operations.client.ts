@@ -47,7 +47,7 @@ export const importSurveyRespondentsClient = async (
         base64,
         dryRun: input.dryRun ?? false,
         generateCredentials: input.generateCredentials ?? true,
-        credentialType: input.credentialType ?? 'TOKEN',
+        credentialType: input.credentialType ?? 'PIN',
         ...(input.credentialExpiresAt
           ? { credentialExpiresAt: input.credentialExpiresAt }
           : {}),

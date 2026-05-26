@@ -105,7 +105,7 @@ export function SurveyParticipantImportModal({
 }: SurveyParticipantImportModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [generateCredentials, setGenerateCredentials] = useState(true);
-  const [credentialType, setCredentialType] = useState<RespondentCredentialType>('TOKEN');
+  const [credentialType] = useState<RespondentCredentialType>('PIN');
   const [credentialExpiresAt, setCredentialExpiresAt] = useState('');
   const [regenerateCredentials, setRegenerateCredentials] = useState(false);
   const [sendInvitations, setSendInvitations] = useState(false);
@@ -160,7 +160,6 @@ export function SurveyParticipantImportModal({
   const resetFlow = useCallback(() => {
     setFile(null);
     setGenerateCredentials(true);
-    setCredentialType('TOKEN');
     setCredentialExpiresAt('');
     setRegenerateCredentials(false);
     setSendInvitations(false);
@@ -398,24 +397,15 @@ export function SurveyParticipantImportModal({
                 disabled={!generateCredentials}
                 className="mt-0.5"
               />
-              Incluir credenciales en texto plano en la respuesta y en el correo
+              Incluir credenciales generadas en texto plano en la respuesta de importación
             </label>
           </div>
 
           <div className="mt-3">
             <label className="text-sm font-medium text-slate-700">Tipo de credencial</label>
-            <select
-              value={credentialType}
-              onChange={(event) => {
-                setCredentialType(event.target.value as RespondentCredentialType);
-                clearExecutionState();
-              }}
-              disabled={!generateCredentials}
-              className="mt-1 w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2 disabled:bg-slate-100"
-            >
-              <option value="TOKEN">TOKEN (magic link por correo)</option>
-              <option value="PIN">CODIGO (documento del respondente)</option>
-            </select>
+            <div className="mt-1 w-full max-w-sm rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Código de acceso (documento del respondente)
+            </div>
           </div>
         </section>
 

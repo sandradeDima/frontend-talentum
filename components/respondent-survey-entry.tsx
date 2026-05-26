@@ -79,8 +79,8 @@ type EntryCopy = {
   submitLabel: string;
   submitBusyLabel: string;
   retryBusyLabel: string;
-  switchHref: string;
-  switchLabel: string;
+  switchHref?: string;
+  switchLabel?: string;
   sectionHeading: string;
   sectionDescription: string;
   readyLabel: string;
@@ -159,8 +159,6 @@ const resolveEntryCopy = (
   campaignSlug: string,
   hasTokenFromLink: boolean
 ): EntryCopy => {
-  const encodedCampaignSlug = encodeURIComponent(campaignSlug);
-
   if (entryMode === 'access-code') {
     return {
       credentialType: 'PIN',
@@ -172,32 +170,32 @@ const resolveEntryCopy = (
       submitLabel: 'Ingresar',
       submitBusyLabel: 'Validando acceso...',
       retryBusyLabel: 'Validando acceso...',
-      switchHref: `/survey/${encodedCampaignSlug}`,
-      switchLabel: 'Ingresar con magic link',
       sectionHeading: 'CÓDIGO DE ACCESO',
       sectionDescription:
-        'Accede con el documento o código que recibiste en tu invitación y entra a la encuesta en un solo paso.',
+        'Accede con el código que recibiste en tu invitación para comenzar la encuesta.',
       readyLabel: 'Código validado'
     };
   }
 
+  const encodedCampaignSlug = encodeURIComponent(campaignSlug);
+
   return {
     credentialType: 'TOKEN',
     inputId: 'credentialToken',
-    label: 'Magic link',
+    label: 'Acceso directo',
     placeholder: 'Pega aquí tu token de acceso',
     helperText: hasTokenFromLink
-      ? 'Detectamos un token en tu enlace. Validaremos tu acceso automáticamente.'
-      : 'Usa el token que recibiste por correo para ingresar mediante magic link.',
+      ? 'Detectamos un enlace de acceso. Validaremos tu ingreso automáticamente.'
+      : 'Usa el enlace de acceso que recibiste para ingresar directamente.',
     submitLabel: 'Ingresar',
     submitBusyLabel: 'Validando acceso...',
     retryBusyLabel: 'Reintentando...',
     switchHref: `/survey/${encodedCampaignSlug}/codigo`,
     switchLabel: 'Ingresar con código de acceso',
-    sectionHeading: 'MAGIC LINK',
+    sectionHeading: 'ACCESO DIRECTO',
     sectionDescription:
       'Si llegaste desde tu correo, validaremos tu acceso y mantendremos la misma experiencia segura y confidencial.',
-    readyLabel: 'Magic link validado'
+    readyLabel: 'Acceso validado'
   };
 };
 
@@ -205,7 +203,7 @@ export function RespondentSurveyEntry({
   branding,
   campaignSlug,
   initialToken = null,
-  entryMode = 'magic-link'
+  entryMode = 'access-code'
 }: RespondentSurveyEntryProps) {
   const initialTokenValue = initialToken?.trim() ?? '';
   const hasTokenFromLink = entryMode === 'magic-link' && initialTokenValue.length > 0;
@@ -393,6 +391,7 @@ export function RespondentSurveyEntry({
   }
 
   const terminalIssue = shouldRenderTerminalState(issue) ? issue : null;
+  const hasSwitchOption = Boolean(entryCopy.switchHref && entryCopy.switchLabel);
   const isCompletedTerminalIssue = Boolean(
     terminalIssue && isCompletedLockoutCode(terminalIssue.technicalCode)
   );
@@ -471,12 +470,14 @@ export function RespondentSurveyEntry({
                 ? 'Volver al inicio'
                 : 'Intentar con otro acceso'}
             </button>
-            <Link
-              href={entryCopy.switchHref}
-              className="w-full rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm text-cooltura-light transition hover:border-cooltura-lime hover:text-cooltura-lime sm:w-auto"
-            >
-              {entryCopy.switchLabel}
-            </Link>
+            {hasSwitchOption ? (
+              <Link
+                href={entryCopy.switchHref as string}
+                className="w-full rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm text-cooltura-light transition hover:border-cooltura-lime hover:text-cooltura-lime sm:w-auto"
+              >
+                {entryCopy.switchLabel}
+              </Link>
+            ) : null}
           </div>
         ) : isAutoValidatingMagicLink ? (
           <article className="cooltura-surface-card px-6 py-8 text-center text-cooltura-light">
@@ -484,7 +485,7 @@ export function RespondentSurveyEntry({
               Validando acceso
             </p>
             <p className="mt-3 text-sm leading-7 text-cooltura-light/80">
-              Estamos comprobando tu magic link para que ingreses directamente a la encuesta.
+              Estamos comprobando tu acceso para que ingreses directamente a la encuesta.
             </p>
           </article>
         ) : (
@@ -518,12 +519,14 @@ export function RespondentSurveyEntry({
                 {stage === 'validating' ? entryCopy.submitBusyLabel : entryCopy.submitLabel}
               </button>
 
-              <Link
-                href={entryCopy.switchHref}
-                className="text-sm text-cooltura-light/76 transition hover:text-cooltura-lime"
-              >
-                {entryCopy.switchLabel}
-              </Link>
+              {hasSwitchOption ? (
+                <Link
+                  href={entryCopy.switchHref as string}
+                  className="text-sm text-cooltura-light/76 transition hover:text-cooltura-lime"
+                >
+                  {entryCopy.switchLabel}
+                </Link>
+              ) : null}
             </div>
           </form>
         )}

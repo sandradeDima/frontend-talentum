@@ -1,9 +1,5 @@
 import { requireSession } from '@/lib/auth-session';
-
-const roleLabel = {
-  ADMIN: 'Administrador global',
-  CLIENT_ADMIN: 'Administrador de cliente'
-} as const;
+import { getUserRoleLabel } from '@/lib/user-role-label';
 
 export default async function AdminProfilePage() {
   const session = await requireSession(['ADMIN', 'CLIENT_ADMIN']);
@@ -31,7 +27,7 @@ export default async function AdminProfilePage() {
           </div>
           <div>
             <dt className="text-xs uppercase tracking-wide text-slate-500">Rol</dt>
-            <dd className="text-sm font-medium text-ink">{roleLabel[user.role]}</dd>
+            <dd className="text-sm font-medium text-ink">{getUserRoleLabel(user.role)}</dd>
           </div>
           <div>
             <dt className="text-xs uppercase tracking-wide text-slate-500">

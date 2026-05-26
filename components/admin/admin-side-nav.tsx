@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { getUserRoleLabel } from '@/lib/user-role-label';
 import coolturaLogo from '@/public/assets/logos/header-logo.png';
 import type { AuthUser } from '@/types/auth';
 import { LogoutButton } from './logout-button';
@@ -16,11 +17,6 @@ type NavItem = {
   label: string;
   href: string;
   matchPrefix: string;
-};
-
-const roleLabel: Record<AuthUser['role'], string> = {
-  ADMIN: 'Administrador global',
-  CLIENT_ADMIN: 'Administrador de cliente'
 };
 
 const isActivePath = (pathname: string, item: NavItem, items: NavItem[]) => {
@@ -137,7 +133,7 @@ export function AdminSideNav({ user }: AdminSideNavProps) {
             Panel de administración
           </p>
           <p className="mt-2 text-sm text-cooltura-light">{user.name}</p>
-          <p className="text-xs text-cooltura-light/62">{roleLabel[user.role]}</p>
+          <p className="text-xs text-cooltura-light/62">{getUserRoleLabel(user.role)}</p>
         </div>
         <button
           type="button"

@@ -26,13 +26,14 @@ export default async function PublicSurveyEntryPage({
   const query = await searchParams;
   const initialToken = pickFirstValue(query.token);
   const branding = await getSurveyBrandingServer(campaignSlug);
+  const entryMode = initialToken ? 'magic-link' : 'access-code';
 
   return (
     <RespondentSurveyEntry
       branding={branding}
       campaignSlug={campaignSlug}
       initialToken={initialToken}
-      entryMode="magic-link"
+      entryMode={entryMode}
     />
   );
 }

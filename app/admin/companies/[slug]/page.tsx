@@ -21,6 +21,7 @@ const dateFormatter = new Intl.DateTimeFormat('es-BO', {
 export default async function CompanyDetailPage({ params }: CompanyDetailPageProps) {
   const { slug } = await params;
   const session = await requireSession(['ADMIN', 'CLIENT_ADMIN']);
+  const canManageCompanyProfile = session.user.role === 'ADMIN';
 
   if (session.user.role === 'CLIENT_ADMIN' && session.user.companySlug !== slug) {
     if (session.user.companySlug) {
@@ -51,18 +52,22 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
           </div>
 
           <nav className="mt-4 flex flex-wrap gap-2 text-sm">
-            <Link
-              href={`/admin/companies/${company.slug}#perfil`}
-              className="admin-button-primary px-3 py-1.5"
-            >
-              Configurar/modificar perfil
-            </Link>
-            <Link
-              href={`/admin/companies/${company.slug}#usuarios`}
-              className="admin-button-secondary px-3 py-1.5"
-            >
-              Usuarios
-            </Link>
+            {canManageCompanyProfile ? (
+              <Link
+                href={`/admin/companies/${company.slug}#perfil`}
+                className="admin-button-primary px-3 py-1.5"
+              >
+                Configurar/modificar perfil
+              </Link>
+            ) : null}
+            {canManageCompanyProfile ? (
+              <Link
+                href={`/admin/companies/${company.slug}#usuarios`}
+                className="admin-button-secondary px-3 py-1.5"
+              >
+                Usuarios
+              </Link>
+            ) : null}
             <Link
               href={`/admin/companies/${company.slug}#encuestas`}
               className="admin-button-secondary px-3 py-1.5"
@@ -95,22 +100,26 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
           </div>
         </header>
 
-        <div id="perfil" className="admin-panel">
-          <CompanyForm
-            mode="edit"
-            companySlug={company.slug}
-            initialCompany={company}
-            allowRestrictedFields={session.user.role === 'ADMIN'}
-          />
-        </div>
+        {canManageCompanyProfile ? (
+          <div id="perfil" className="admin-panel">
+            <CompanyForm
+              mode="edit"
+              companySlug={company.slug}
+              initialCompany={company}
+              allowRestrictedFields={canManageCompanyProfile}
+            />
+          </div>
+        ) : null}
 
-        <div id="usuarios" className="admin-panel">
-          <CompanyUsersManager
-            companySlug={company.slug}
-            initialRows={usersData.rows}
-            canManage={session.user.role === 'ADMIN'}
-          />
-        </div>
+        {canManageCompanyProfile ? (
+          <div id="usuarios" className="admin-panel">
+            <CompanyUsersManager
+              companySlug={company.slug}
+              initialRows={usersData.rows}
+              canManage={canManageCompanyProfile}
+            />
+          </div>
+        ) : null}
 
         <div id="encuestas" className="admin-panel">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -130,7 +139,7 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
           <SurveyCampaignList
             companySlug={company.slug}
             rows={surveysData.rows}
-            canManage={session.user.role === 'ADMIN'}
+            canManage={canManageCompanyProfile}
           />
         </div>
       </section>

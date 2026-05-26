@@ -82,7 +82,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
 
   if (session.user.role !== 'ADMIN') {
     if (session.user.companySlug) {
-      redirect(`/admin/companies/${session.user.companySlug}#usuarios`);
+      redirect(`/admin/companies/${session.user.companySlug}`);
     }
     redirect('/admin/home');
   }
