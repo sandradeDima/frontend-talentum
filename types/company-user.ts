@@ -29,6 +29,11 @@ export type CompanyUserRow = {
   canResetPassword: boolean;
 };
 
+export type EmailDeliveryStatus = {
+  sent: boolean;
+  message: string | null;
+};
+
 export type CompanyUserListData = {
   company: {
     id: string;
@@ -63,6 +68,29 @@ export type CreateCompanyUserInput = {
   email: string;
   phone: string;
   role?: CompanyUserRole;
+};
+
+export type CreateCompanyUserResult = {
+  user: CompanyUserRow;
+  invitation: {
+    id: string;
+    email: string;
+    expiresAt: string;
+  };
+  emailDelivery: EmailDeliveryStatus;
+};
+
+export type ResetCompanyUserPasswordResult = {
+  email: string;
+  expiresAt: string;
+  emailDelivery: EmailDeliveryStatus;
+};
+
+export type ResendCompanyUserInviteResult = {
+  invitationId: string;
+  email: string;
+  expiresAt: string;
+  emailDelivery: EmailDeliveryStatus;
 };
 
 export type UpdateCompanyUserInput = {

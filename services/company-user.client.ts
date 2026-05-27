@@ -1,8 +1,11 @@
 import { requestApiClient } from '@/lib/api-client-browser';
 import type {
   CompanyUserRow,
+  CreateCompanyUserResult,
   CreateGlobalAdminInput,
   CreateCompanyUserInput,
+  ResendCompanyUserInviteResult,
+  ResetCompanyUserPasswordResult,
   UpdateCompanyUserInput
 } from '@/types/company-user';
 
@@ -17,7 +20,7 @@ export const createCompanyUserClient = async (
   companySlug: string,
   input: CreateCompanyUserInput
 ) => {
-  return requestApiClient<{ user: CompanyUserRow }>(
+  return requestApiClient<CreateCompanyUserResult>(
     `/companies/${encodeURIComponent(companySlug)}/users`,
     {
       method: 'POST',
@@ -56,7 +59,7 @@ export const resetCompanyUserPasswordClient = async (
   companySlug: string,
   userId: string
 ) => {
-  return requestApiClient<{ email: string; expiresAt: string }>(
+  return requestApiClient<ResetCompanyUserPasswordResult>(
     `/companies/${encodeURIComponent(companySlug)}/users/${encodeURIComponent(userId)}/reset-password`,
     {
       method: 'POST'
@@ -68,7 +71,7 @@ export const resendCompanyUserInviteClient = async (
   companySlug: string,
   userId: string
 ) => {
-  return requestApiClient<{ invitationId: string; email: string; expiresAt: string }>(
+  return requestApiClient<ResendCompanyUserInviteResult>(
     `/companies/${encodeURIComponent(companySlug)}/users/${encodeURIComponent(userId)}/resend-invite`,
     {
       method: 'POST'

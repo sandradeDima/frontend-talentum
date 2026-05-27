@@ -25,7 +25,7 @@ type CompanyUsersManagerProps = {
 };
 
 type ToastState = {
-  kind: 'success' | 'error';
+  kind: 'success' | 'error' | 'warning';
   message: string;
 };
 
@@ -118,6 +118,18 @@ export function CompanyUsersManager({
     }, 4200);
   };
 
+  const showEmailDeliveryToast = (
+    delivery: { sent: boolean; message: string | null },
+    successMessage: string
+  ) => {
+    if (delivery.sent) {
+      showToast('success', successMessage);
+      return;
+    }
+
+    showToast('warning', delivery.message ?? successMessage);
+  };
+
   const resetModal = () => {
     setIsModalOpen(false);
     setEditingUser(null);
@@ -200,7 +212,7 @@ export function CompanyUsersManager({
         });
 
         upsertRow(created.user);
-        showToast('success', 'Usuario creado e invitación enviada.');
+        showEmailDeliveryToast(created.emailDelivery, 'Usuario creado e invitación enviada.');
         resetModal();
         return;
       }
@@ -267,8 +279,8 @@ export function CompanyUsersManager({
     setIsBusy(true);
 
     try {
-      await resetCompanyUserPasswordClient(companySlug, row.id);
-      showToast('success', 'Correo de reseteo enviado.');
+      const result = await resetCompanyUserPasswordClient(companySlug, row.id);
+      showEmailDeliveryToast(result.emailDelivery, 'Correo de reseteo enviado.');
     } catch (error) {
       showToast('error', mapApiError(error));
     } finally {
@@ -284,8 +296,8 @@ export function CompanyUsersManager({
     setIsBusy(true);
 
     try {
-      await resendCompanyUserInviteClient(companySlug, row.id);
-      showToast('success', 'Invitación reenviada correctamente.');
+      const result = await resendCompanyUserInviteClient(companySlug, row.id);
+      showEmailDeliveryToast(result.emailDelivery, 'Invitación reenviada correctamente.');
     } catch (error) {
       showToast('error', mapApiError(error));
     } finally {
@@ -302,7 +314,9 @@ export function CompanyUsersManager({
           className={`fixed right-4 top-4 z-50 max-w-sm rounded-lg px-3 py-2 text-sm font-medium shadow-lg ${
             toast.kind === 'success'
               ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
-              : 'border border-rose-200 bg-rose-50 text-rose-800'
+              : toast.kind === 'warning'
+                ? 'border border-amber-200 bg-amber-50 text-amber-900'
+                : 'border border-rose-200 bg-rose-50 text-rose-800'
           }`}
         >
           {toast.message}
