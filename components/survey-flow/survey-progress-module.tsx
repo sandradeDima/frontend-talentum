@@ -3,25 +3,27 @@ type SurveyProgressModuleProps = {
   label: string;
   currentStep: number;
   totalSteps: number;
+  className?: string;
 };
 
 export function SurveyProgressModule({
   progressPercent,
   label,
   currentStep,
-  totalSteps
+  totalSteps,
+  className
 }: SurveyProgressModuleProps) {
   return (
-    <div className="mx-auto w-full max-w-[380px] text-left text-cooltura-light">
+    <div className={`w-full max-w-[380px] text-left text-cooltura-light ${className ?? 'mx-auto'}`}>
       <p className="text-[0.6rem] uppercase tracking-[0.18em] text-cooltura-light/55">
         Has completado
       </p>
-      <div className="mt-1 flex items-end justify-between gap-4">
-        <p className="text-lg leading-none text-cooltura-light sm:text-[1.65rem]">
+      <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+        <p className="text-lg leading-tight text-cooltura-light sm:text-[1.65rem] sm:leading-none">
           <span className="text-cooltura-lime">{progressPercent}%</span>{' '}
           <span>{label}</span>
         </p>
-        <span className="whitespace-nowrap text-[0.6rem] uppercase tracking-[0.16em] text-cooltura-light/45">
+        <span className="text-[0.6rem] uppercase tracking-[0.16em] text-cooltura-light/45 sm:whitespace-nowrap">
           Paso {currentStep} de {totalSteps}
         </span>
       </div>
@@ -32,7 +34,7 @@ export function SurveyProgressModule({
           className="absolute left-0 top-1/2 h-[10px] -translate-y-1/2 rounded-full bg-cooltura-lime transition-all duration-300"
           style={{ width: `${progressPercent}%` }}
         />
-        <div className="absolute inset-x-4 top-1/2 flex -translate-y-1/2 justify-between">
+        <div className="absolute inset-x-3 top-1/2 flex -translate-y-1/2 justify-between sm:inset-x-4">
           {Array.from({ length: Math.max(totalSteps - 1, 0) }, (_, index) => (
             <span
               key={index}

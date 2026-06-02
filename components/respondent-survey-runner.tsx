@@ -40,6 +40,7 @@ type RespondentSurveyRunnerProps = {
   onSubmitted: (result: SubmitSurveyResponseResult) => void;
   onFatalError: (error: unknown) => void;
   onExitToIntro: () => void;
+  previewMode?: boolean;
 };
 
 type RunnerQuestionType = 'scale5' | 'scale10' | 'text';
@@ -74,7 +75,10 @@ type SectionQuestionsPage = {
 type FinalBlockPage = {
   kind: 'final-block';
   progressLabel: string;
-  introText: string;
+  npsHelperText: string;
+  npsQuestion: string;
+  openPromptPrefix: string;
+  openPromptQuestion: string;
   questions: [RunnerQuestion, RunnerQuestion];
 };
 
@@ -127,10 +131,63 @@ const SECTION_DISPLAY: Record<
 };
 
 const FINAL_BLOCK_PROGRESS_LABEL = 'Consideraciones finales';
+const FINAL_NPS_HELPER_TEXT = 'Del 1 al 10, donde 1 es la nota más baja y 10 la más alta';
+const FINAL_NPS_DEFAULT_QUESTION =
+  '¿Qué tan probable es que recomiende a un amigo o alguien cercano, trabajar en esta organización?';
+const FINAL_OPEN_PROMPT_PREFIX = 'Queremos escucharte:';
+const FINAL_OPEN_DEFAULT_QUESTION =
+  '¿Qué podríamos hacer para mejorar tu experiencia como colaborador?';
 
 const normalizePrompt = (prompt: string, fallback: string): string => {
   const cleaned = prompt.trim();
   return cleaned.length > 0 ? cleaned : fallback;
+};
+
+const buildFinalNpsCopy = (prompt: string) => {
+  const cleaned = normalizePrompt(
+    prompt,
+    `${FINAL_NPS_HELPER_TEXT}, ${FINAL_NPS_DEFAULT_QUESTION}`
+  );
+  const questionStart = cleaned.indexOf('¿');
+
+  if (questionStart >= 0) {
+    const questionText = cleaned.slice(questionStart).trim();
+    return {
+      helperText: FINAL_NPS_HELPER_TEXT,
+      questionText: questionText.length > 0 ? questionText : FINAL_NPS_DEFAULT_QUESTION
+    };
+  }
+
+  if (cleaned.toLowerCase().startsWith('del 1 al 10')) {
+    const separatorIndex = cleaned.lastIndexOf(',');
+    if (separatorIndex >= 0) {
+      const questionText = cleaned.slice(separatorIndex + 1).trim();
+      return {
+        helperText: FINAL_NPS_HELPER_TEXT,
+        questionText: questionText.length > 0 ? questionText : FINAL_NPS_DEFAULT_QUESTION
+      };
+    }
+  }
+
+  return {
+    helperText: FINAL_NPS_HELPER_TEXT,
+    questionText: cleaned
+  };
+};
+
+const buildFinalOpenCopy = (prompt: string) => {
+  const cleaned = normalizePrompt(
+    prompt,
+    `${FINAL_OPEN_PROMPT_PREFIX} ${FINAL_OPEN_DEFAULT_QUESTION}`
+  );
+  const cleanedQuestion = cleaned
+    .replace(new RegExp(`^${FINAL_OPEN_PROMPT_PREFIX}\\s*`, 'i'), '')
+    .trim();
+
+  return {
+    prefixText: FINAL_OPEN_PROMPT_PREFIX,
+    questionText: cleanedQuestion.length > 0 ? cleanedQuestion : FINAL_OPEN_DEFAULT_QUESTION
+  };
 };
 
 const buildSectionDefinitions = (
@@ -196,23 +253,19 @@ const buildSectionDefinitions = (
 
 const buildPages = (campaign: SurveyCampaignExecutionContext): SurveyPage[] => {
   const sections = buildSectionDefinitions(campaign);
+  const finalNpsCopy = buildFinalNpsCopy(campaign.content.finalNpsQuestion);
+  const finalOpenCopy = buildFinalOpenCopy(campaign.content.finalOpenQuestion);
   const finalQuestions: [RunnerQuestion, RunnerQuestion] = [
     {
       key: 'final_nps',
-      prompt: normalizePrompt(
-        campaign.content.finalNpsQuestion,
-        'Del 1 al 10, donde 1 es la nota más baja y 10 la más alta, ¿qué tan probable es que recomiendes a un amigo o alguien cercano trabajar en esta organización?'
-      ),
+      prompt: finalNpsCopy.questionText,
       type: 'scale10',
       sectionKey: 'final',
       required: true
     },
     {
       key: 'final_open',
-      prompt: normalizePrompt(
-        campaign.content.finalOpenQuestion,
-        'Queremos escucharte: ¿Qué podríamos hacer para mejorar tu experiencia como colaborador?'
-      ),
+      prompt: finalOpenCopy.questionText,
       type: 'text',
       sectionKey: 'final',
       required: false
@@ -239,7 +292,10 @@ const buildPages = (campaign: SurveyCampaignExecutionContext): SurveyPage[] => {
     {
       kind: 'final-block',
       progressLabel: FINAL_BLOCK_PROGRESS_LABEL,
-      introText: 'Este es el bloque final.',
+      npsHelperText: finalNpsCopy.helperText,
+      npsQuestion: finalNpsCopy.questionText,
+      openPromptPrefix: finalOpenCopy.prefixText,
+      openPromptQuestion: finalOpenCopy.questionText,
       questions: finalQuestions
     },
     {
@@ -365,7 +421,8 @@ export function RespondentSurveyRunner({
   initialResponseStatus: _initialResponseStatus,
   onSubmitted,
   onFatalError,
-  onExitToIntro
+  onExitToIntro,
+  previewMode = false
 }: RespondentSurveyRunnerProps) {
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
@@ -408,6 +465,24 @@ export function RespondentSurveyRunner({
       : progressPercent;
 
   const autosaveStatusMessage = useMemo(() => {
+    if (previewMode) {
+      if (isAutosaving) {
+        return 'Actualizando vista previa local...';
+      }
+
+      if (lastSavedAt) {
+        const dateValue = new Date(lastSavedAt);
+        if (!Number.isNaN(dateValue.getTime())) {
+          return `Vista previa local actualizada: ${new Intl.DateTimeFormat('es-BO', {
+            dateStyle: 'short',
+            timeStyle: 'short'
+          }).format(dateValue)}`;
+        }
+      }
+
+      return 'Vista previa local: los cambios no se envian al backend.';
+    }
+
     if (isAutosaving) {
       return 'Guardando respuestas...';
     }
@@ -427,10 +502,21 @@ export function RespondentSurveyRunner({
     }
 
     return 'Tus respuestas se guardan automáticamente.';
-  }, [autosaveError, isAutosaving, lastSavedAt]);
+  }, [autosaveError, isAutosaving, lastSavedAt, previewMode]);
 
   const executeAutosave = useCallback(async () => {
     if (isSubmittingRef.current || isSubmitting) {
+      return;
+    }
+
+    if (previewMode) {
+      if (dirtyQuestionKeysRef.current.size === 0) {
+        return;
+      }
+
+      dirtyQuestionKeysRef.current = new Set();
+      setAutosaveError(null);
+      setLastSavedAt(new Date().toISOString());
       return;
     }
 
@@ -496,7 +582,15 @@ export function RespondentSurveyRunner({
         }
       }
     }
-  }, [answers, allQuestions, isSubmitting, onFatalError, progressStorageKey, sessionToken]);
+  }, [
+    answers,
+    allQuestions,
+    isSubmitting,
+    onFatalError,
+    previewMode,
+    progressStorageKey,
+    sessionToken
+  ]);
 
   useEffect(() => {
     if (!progressStorageKey) {
@@ -700,6 +794,19 @@ export function RespondentSurveyRunner({
     setValidationError(null);
 
     try {
+      if (previewMode) {
+        if (progressStorageKey) {
+          clearSurveyProgressSnapshot(progressStorageKey);
+        }
+
+        onSubmitted({
+          responseId: 'preview-response',
+          status: 'SUBMITTED',
+          submittedAt: new Date().toISOString()
+        });
+        return;
+      }
+
       const answersPayload = toAnswerPayload(answers, allQuestions);
       const result = await submitSurveyResponseClient({
         sessionToken,
@@ -770,14 +877,15 @@ export function RespondentSurveyRunner({
 
       {currentPage.kind === 'final-block' ? (
         <SurveyFinalBlockScreen
-          introText={currentPage.introText}
-          npsPrompt={currentPage.questions[0].prompt}
+          npsHelperText={currentPage.npsHelperText}
+          npsPrompt={currentPage.npsQuestion}
           npsValue={
             typeof answers[currentPage.questions[0].key] === 'number'
               ? (answers[currentPage.questions[0].key] as number)
               : undefined
           }
-          openPrompt={currentPage.questions[1].prompt}
+          openPromptPrefix={currentPage.openPromptPrefix}
+          openPrompt={currentPage.openPromptQuestion}
           openValue={
             typeof answers[currentPage.questions[1].key] === 'string'
               ? (answers[currentPage.questions[1].key] as string)

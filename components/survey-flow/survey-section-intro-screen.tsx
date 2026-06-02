@@ -36,12 +36,12 @@ export function SurveySectionIntroScreen({
         type="button"
         onClick={onBack}
         disabled={disableBack || isBusy}
-        className="text-left text-[1.85rem] leading-none text-cooltura-light transition hover:text-cooltura-lime disabled:cursor-not-allowed disabled:opacity-45"
+        className="text-left text-[1.55rem] leading-none text-cooltura-light transition hover:text-cooltura-lime disabled:cursor-not-allowed disabled:opacity-45 sm:text-[1.85rem]"
       >
         Volver
       </button>
 
-      <div className="mx-auto flex min-h-[660px] max-w-[900px] flex-col items-center justify-center px-2 pb-28 pt-16 text-center sm:pt-20">
+      <div className="mx-auto flex min-h-[660px] max-w-[900px] flex-col items-center justify-center px-1.5 pb-24 pt-14 text-center sm:px-2 sm:pb-28 sm:pt-20">
         <h1 className="font-coolturaDisplay text-[1.9rem] uppercase tracking-[0.05em] text-cooltura-light sm:text-[2.55rem]">
           {title}
         </h1>
@@ -53,7 +53,7 @@ export function SurveySectionIntroScreen({
           type="button"
           onClick={onNext}
           disabled={isBusy}
-          className="cooltura-pill-button mt-10 min-w-[280px]"
+          className="cooltura-pill-button mt-10 w-full sm:min-w-[280px] sm:w-auto"
         >
           Siguiente
         </button>

@@ -27,12 +27,30 @@ const formatDateTime = (rawValue: string | null | undefined) => {
   }).format(value);
 };
 
+const normalizeLine = (value: string) =>
+  value
+    .trim()
+    .toLocaleLowerCase('es-BO')
+    .replace(/\s+/g, ' ');
+
 export function SurveySubmittedLockedScreen({
   campaignName,
   submittedAt,
   closingLines = []
 }: SurveySubmittedLockedScreenProps) {
   const formattedSubmittedAt = formatDateTime(submittedAt);
+  const summaryLines = [
+    'Gracias por tomarte el tiempo para responder.',
+    'Tu opinión es clave para seguir construyendo un mejor lugar para trabajar.',
+    campaignName
+      ? `Tu opinión en ${campaignName} es clave para seguir construyendo un mejor lugar para trabajar.`
+      : null
+  ]
+    .filter((line): line is string => Boolean(line))
+    .map(normalizeLine);
+  const visibleClosingLines = closingLines.filter(
+    (line) => !summaryLines.includes(normalizeLine(line))
+  );
 
   return (
     <div className="relative min-h-[780px] overflow-hidden text-cooltura-light">
@@ -54,9 +72,9 @@ export function SurveySubmittedLockedScreen({
           ) : null}
         </div>
 
-        {closingLines.length > 0 ? (
+        {visibleClosingLines.length > 0 ? (
           <div className="mt-8 max-w-[760px] space-y-3 rounded-[2rem] border border-white/10 bg-white/5 px-6 py-6 text-left text-sm leading-7 text-cooltura-light/84">
-            {closingLines.map((line, index) => (
+            {visibleClosingLines.map((line, index) => (
               <p key={`${line}-${index}`}>{line}</p>
             ))}
           </div>

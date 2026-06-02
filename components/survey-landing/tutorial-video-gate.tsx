@@ -158,6 +158,9 @@ export function TutorialVideoGate({
   onProceed,
   isStarting
 }: TutorialVideoGateProps) {
+  const bodyTextStyle = {
+    fontFamily: 'Montserrat, sans-serif'
+  };
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const youtubePlayerRef = useRef<YouTubePlayerInstance | null>(null);
   const maxAllowedTimeRef = useRef(0);
@@ -287,7 +290,7 @@ export function TutorialVideoGate({
 
   return (
     <div className="contents">
-      <div className="order-1 mx-auto w-full max-w-[520px] overflow-hidden rounded-[1.75rem] border border-white/12 bg-white/6 shadow-cooltura">
+      <div className="order-1 mx-auto w-full max-w-[430px] overflow-hidden rounded-[1.8rem] border border-white/12 bg-white/6 shadow-cooltura lg:mx-0">
         {hasTutorialVideo ? (
           embeddedVideo ? (
             <div className="relative h-0 pb-[56.25%]">
@@ -317,28 +320,22 @@ export function TutorialVideoGate({
             </video>
           )
         ) : (
-          <div className="flex aspect-video items-center justify-center bg-[#8a928f] px-6 text-center">
-            <div>
-              <p className="font-coolturaDisplay text-xl uppercase tracking-[0.08em] text-cooltura-dark">
-                Tutorial no disponible
-              </p>
-              <p className="mt-3 text-sm leading-6 text-cooltura-dark/80">
-                El tutorial no está disponible en este momento. Puedes continuar con la encuesta.
-              </p>
-            </div>
-          </div>
+          <div className="aspect-video bg-[#7d7981]" aria-hidden="true" />
         )}
       </div>
 
-      <div className="order-3 flex min-h-[72px] w-full flex-col items-center justify-center px-4 pt-1 text-center lg:col-span-2 lg:pt-2">
+      <div
+        className="order-3 flex min-h-[56px] w-full flex-col items-center justify-center px-4 pt-1 text-center lg:col-span-2 lg:pt-1"
+        style={bodyTextStyle}
+      >
         {statusCopy.message ? (
-          <p className="text-sm font-bold leading-6 text-cooltura-lime sm:text-base">
+          <p className="text-sm font-semibold leading-5 text-cooltura-lime sm:text-[0.96rem]">
             {statusCopy.message}
           </p>
         ) : null}
 
         {statusCopy.detail ? (
-          <p className="mt-2 max-w-[520px] text-xs leading-6 text-cooltura-light/62 sm:text-sm">
+          <p className="mt-1.5 max-w-[460px] text-[0.78rem] leading-5 text-cooltura-light/68 sm:text-[0.84rem]">
             {statusCopy.detail}
           </p>
         ) : null}
@@ -348,7 +345,7 @@ export function TutorialVideoGate({
             type="button"
             onClick={onProceed}
             disabled={statusCopy.proceedDisabled || isStarting}
-            className="cooltura-pill-button mt-2 min-w-[280px]"
+            className="cooltura-pill-button mt-2 min-w-[240px]"
           >
             {isStarting ? 'Comenzando...' : 'Comenzar encuesta'}
           </button>

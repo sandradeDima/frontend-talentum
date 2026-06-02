@@ -31,14 +31,14 @@ export function WhatsAppFab({ phone }: WhatsAppFabProps) {
       target="_blank"
       rel="noreferrer"
       aria-label="Contactar por WhatsApp"
-      className="fixed bottom-6 right-5 z-30 inline-flex h-[74px] w-[74px] items-center justify-center rounded-full bg-[#25d366] shadow-[0_18px_35px_rgba(0,0,0,0.34)] transition duration-200 hover:scale-[1.03] hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cooltura-lime"
+      className="fixed bottom-4 right-4 z-30 inline-flex h-[60px] w-[60px] items-center justify-center rounded-full bg-[#25d366] shadow-[0_18px_35px_rgba(0,0,0,0.34)] transition duration-200 hover:scale-[1.03] hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cooltura-lime sm:bottom-6 sm:right-5 sm:h-[74px] sm:w-[74px]"
     >
       <Image
         src={whatsappIcon}
         alt=""
         width={34}
         height={34}
-        className="h-[34px] w-[34px] object-contain brightness-0 invert"
+        className="h-7 w-7 object-contain brightness-0 invert sm:h-[34px] sm:w-[34px]"
       />
     </a>
   );

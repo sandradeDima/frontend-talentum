@@ -23,7 +23,8 @@ const config: Config = {
       },
       fontFamily: {
         coolturaDisplay: ['"Lemon Milk"', 'sans-serif'],
-        coolturaSans: ['"Montserrat Black"', 'sans-serif']
+        coolturaSans: ['"Montserrat Black"', 'sans-serif'],
+        coolturaBody: ['Montserrat', 'sans-serif']
       },
       boxShadow: {
         cooltura: '0 28px 64px rgba(0, 0, 0, 0.34)'
