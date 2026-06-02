@@ -7,6 +7,7 @@ import {
   startSocialSignInClient
 } from '@/services/auth.client';
 import { extractErrorMessage, resolvePostLoginPath } from '@/lib/auth-shared';
+import { env } from '@/lib/env';
 import type { SocialProvider } from '@/types/auth';
 
 type LoginFormProps = {
@@ -37,6 +38,7 @@ export function LoginForm({
   const isBlockedByCompanyStatus =
     companyStatus === 'INACTIVE' || companyStatus === 'PENDING_SETUP';
   const isSocialLoading = socialLoadingProvider !== null;
+  const appVersion = !isCompanyLogin ? env.appVersion : null;
   const submitDisabled =
     disabled || isBlockedByCompanyStatus || isLoading || isSocialLoading;
 
@@ -186,6 +188,10 @@ export function LoginForm({
         Acceso por invitación únicamente. También puedes ingresar con Google o
         Microsoft si tu correo ya fue registrado en la plataforma.
       </p>
+
+      {appVersion ? (
+        <p className="text-xs text-cooltura-light/48">Versión {appVersion}</p>
+      ) : null}
     </form>
   );
 }
