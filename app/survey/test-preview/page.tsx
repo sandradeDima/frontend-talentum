@@ -21,7 +21,10 @@ const pickFirstValue = (value: string | string[] | undefined): string | null => 
 export default async function TestSurveyPreviewPage({
   searchParams
 }: TestSurveyPreviewPageProps) {
-  if (process.env.NODE_ENV === 'production') {
+  const isTestSurveyPreviewEnabled =
+    process.env.ENABLE_TEST_SURVEY_PREVIEW === 'true';
+
+  if (process.env.NODE_ENV === 'production' && !isTestSurveyPreviewEnabled) {
     notFound();
   }
 
