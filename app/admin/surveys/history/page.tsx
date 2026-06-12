@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireSession } from '@/lib/auth-session';
 import { extractErrorMessage } from '@/lib/auth-shared';
+import { formatBoliviaDate, formatBoliviaDateTime } from '@/lib/bolivia-time';
 import { getGlobalSurveyCampaignsServer } from '@/services/survey.server';
 
 type AdminSurveyHistoryPageProps = {
@@ -11,15 +12,6 @@ type AdminSurveyHistoryPageProps = {
     company?: string;
   }>;
 };
-
-const dateFormatter = new Intl.DateTimeFormat('es-BO', {
-  dateStyle: 'medium'
-});
-
-const dateTimeFormatter = new Intl.DateTimeFormat('es-BO', {
-  dateStyle: 'medium',
-  timeStyle: 'short'
-});
 
 const toPositiveNumber = (value: string | undefined, fallback: number) => {
   if (!value) {
@@ -50,16 +42,7 @@ const buildHref = (input: {
 };
 
 const formatOptionalDateTime = (value: string | null): string => {
-  if (!value) {
-    return 'Sin registro';
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return 'Sin registro';
-  }
-
-  return dateTimeFormatter.format(parsed);
+  return formatBoliviaDateTime(value);
 };
 
 export default async function AdminSurveyHistoryPage({
@@ -145,7 +128,7 @@ export default async function AdminSurveyHistoryPage({
                       <td className="px-4 py-3 font-medium text-ink">{row.name}</td>
                       <td className="px-4 py-3 text-slate-700">{row.company.name}</td>
                       <td className="px-4 py-3 text-slate-700">
-                        {dateFormatter.format(new Date(row.endDate))}
+                        {formatBoliviaDate(row.endDate)}
                       </td>
                       <td className="px-4 py-3 text-slate-700">
                         {formatOptionalDateTime(row.finalizedAt)}

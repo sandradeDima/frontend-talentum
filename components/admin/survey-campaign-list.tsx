@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatBoliviaDate } from '@/lib/bolivia-time';
 import { env } from '@/lib/env';
 import type { SurveyCampaignSummary } from '@/types/survey';
 import { SurveyStatusBadge } from './survey-status-badge';
@@ -8,10 +9,6 @@ type SurveyCampaignListProps = {
   rows: SurveyCampaignSummary[];
   canManage: boolean;
 };
-
-const dateFormatter = new Intl.DateTimeFormat('es-BO', {
-  dateStyle: 'medium'
-});
 
 export function SurveyCampaignList({ companySlug, rows, canManage }: SurveyCampaignListProps) {
   if (rows.length === 0) {
@@ -51,18 +48,16 @@ export function SurveyCampaignList({ companySlug, rows, canManage }: SurveyCampa
                 <tr key={survey.id} className="align-top">
                   <td className="px-4 py-3 font-medium text-ink">{survey.name}</td>
                   <td className="px-4 py-3 text-slate-700">
-                    {dateFormatter.format(new Date(survey.createdAt))}
+                    {formatBoliviaDate(survey.createdAt)}
                   </td>
                   <td className="px-4 py-3 text-slate-700">
-                    {dateFormatter.format(new Date(survey.startDate))}
+                    {formatBoliviaDate(survey.startDate)}
                   </td>
                   <td className="px-4 py-3 text-slate-700">
-                    {dateFormatter.format(new Date(survey.endDate))}
+                    {formatBoliviaDate(survey.endDate)}
                   </td>
                   <td className="px-4 py-3 text-slate-700">
-                    {survey.finalizedAt
-                      ? dateFormatter.format(new Date(survey.finalizedAt))
-                      : 'Pendiente'}
+                    {survey.finalizedAt ? formatBoliviaDate(survey.finalizedAt) : 'Pendiente'}
                   </td>
                   <td className="px-4 py-3 text-slate-700">{survey.totalEnabledDays}</td>
                   <td className="px-4 py-3">

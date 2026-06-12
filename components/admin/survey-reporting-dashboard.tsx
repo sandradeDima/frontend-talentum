@@ -19,6 +19,7 @@ import {
 } from '@/lib/dashboard-exports';
 import { deriveDashboardSuppressionDescriptor } from '@/lib/dashboard-suppression';
 import { env } from '@/lib/env';
+import { formatBoliviaDateTime } from '@/lib/bolivia-time';
 import { ApiRequestError } from '@/types/api';
 import type {
   DashboardExportJobResult,
@@ -43,11 +44,6 @@ const groupByDescriptions: Record<DashboardGroupBy, string> = {
   GERENCIA: 'Corte por gerencia, sujeto al umbral de anonimato.',
   CENTRO: 'Corte por centro de trabajo, sujeto al umbral de anonimato.'
 };
-
-const dateTimeFormatter = new Intl.DateTimeFormat('es-BO', {
-  dateStyle: 'medium',
-  timeStyle: 'short'
-});
 
 const numberFormatter = new Intl.NumberFormat('es-BO');
 
@@ -110,16 +106,7 @@ const toAverage = (value: number): string => {
 };
 
 const formatDateTime = (value: string | null): string => {
-  if (!value) {
-    return 'Sin registro';
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return 'Sin registro';
-  }
-
-  return dateTimeFormatter.format(parsed);
+  return formatBoliviaDateTime(value);
 };
 
 const resolveDownloadUrl = (value: string | null): string | null => {
@@ -502,7 +489,7 @@ export function SurveyReportingDashboard({
         </p>
         <p className="mt-1 text-xs text-slate-500">
           Última actualización dashboard:{' '}
-          {lastDashboardRefreshAt ? dateTimeFormatter.format(lastDashboardRefreshAt) : 'Sin registro'}.
+          {lastDashboardRefreshAt ? formatBoliviaDateTime(lastDashboardRefreshAt) : 'Sin registro'}.
         </p>
       </header>
 
@@ -969,7 +956,7 @@ export function SurveyReportingDashboard({
         ) : null}
         <p className="text-xs text-slate-500">
           Última actualización de exportaciones:{' '}
-          {lastExportRefreshAt ? dateTimeFormatter.format(lastExportRefreshAt) : 'Sin registro'}.
+          {lastExportRefreshAt ? formatBoliviaDateTime(lastExportRefreshAt) : 'Sin registro'}.
         </p>
 
         {suppression.metricsArePartial ? (

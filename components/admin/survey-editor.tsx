@@ -4,6 +4,13 @@ import Link from 'next/link';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  formatBoliviaDate,
+  formatBoliviaDateTime,
+  toBoliviaDateInputValue,
+  toBoliviaDateTimeInputValue,
+  toBoliviaDateTimeIso
+} from '@/lib/bolivia-time';
+import {
   closeSurveyCampaignClient,
   configureSurveyRemindersClient,
   createSurveyCampaignClient,
@@ -31,15 +38,6 @@ import type {
 import { AdminModal } from './admin-modal';
 import { SurveyParticipantImportModal } from './survey-participant-import-modal';
 import { SurveyStatusBadge } from './survey-status-badge';
-
-const dateFormatter = new Intl.DateTimeFormat('es-BO', {
-  dateStyle: 'medium'
-});
-
-const dateTimeFormatter = new Intl.DateTimeFormat('es-BO', {
-  dateStyle: 'medium',
-  timeStyle: 'short'
-});
 
 const REMINDER_LIMIT = 20;
 
@@ -95,46 +93,6 @@ type ReminderRow = {
   scheduledAt: string;
 };
 
-const toDateInputValue = (isoDate: string): string => {
-  const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, '0');
-  const day = `${date.getDate()}`.padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const toDateTimeLocalValue = (isoDate: string): string => {
-  const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, '0');
-  const day = `${date.getDate()}`.padStart(2, '0');
-  const hour = `${date.getHours()}`.padStart(2, '0');
-  const minute = `${date.getMinutes()}`.padStart(2, '0');
-
-  return `${year}-${month}-${day}T${hour}:${minute}`;
-};
-
-const formatOptionalDateTime = (value: string | null): string => {
-  if (!value) {
-    return 'Sin registro';
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return 'Sin registro';
-  }
-
-  return dateTimeFormatter.format(parsed);
-};
-
 const calculateEnabledDaysFromInputs = (
   startDate: string,
   endDate: string
@@ -163,8 +121,8 @@ const toEditorInputFromSurvey = (
 ): SurveyCampaignUpsertInput => ({
   templateKey: survey.templateKey,
   name: survey.name,
-  startDate: toDateInputValue(survey.startDate),
-  endDate: toDateInputValue(survey.endDate),
+  startDate: toBoliviaDateInputValue(survey.startDate),
+  endDate: toBoliviaDateInputValue(survey.endDate),
   introGeneral: survey.content.introGeneral,
   leaderIntro: survey.content.leaderIntro,
   leaderQuestions: [...survey.content.leaderQuestions],
@@ -204,7 +162,7 @@ const makeEditableReminderRows = (survey: SurveyCampaignDetail | null): Reminder
   if (futureSchedules.length > 0) {
     return futureSchedules.map((schedule) => ({
       id: schedule.id,
-      scheduledAt: toDateTimeLocalValue(schedule.scheduledAt)
+      scheduledAt: toBoliviaDateTimeInputValue(schedule.scheduledAt)
     }));
   }
 
@@ -216,7 +174,7 @@ const makeEditableReminderRows = (survey: SurveyCampaignDetail | null): Reminder
   if (futureReminders.length > 0) {
     return futureReminders.map((reminder) => ({
       id: reminder.id,
-      scheduledAt: toDateTimeLocalValue(reminder.scheduledAt)
+      scheduledAt: toBoliviaDateTimeInputValue(reminder.scheduledAt)
     }));
   }
 
@@ -318,20 +276,22 @@ export function SurveyEditor({
 
   const creationDateLabel = useMemo(() => {
     const source = survey?.createdAt ?? new Date().toISOString();
-    return dateFormatter.format(new Date(source));
+    return formatBoliviaDate(source);
   }, [survey?.createdAt]);
 
   const surveyStatus: SurveyCampaignStatus | null = survey?.status ?? null;
   const lifecycleState = survey?.lifecycle.state ?? null;
+  const isDraftSurvey =
+    mode === 'create' || lifecycleState === 'DRAFT' || surveyStatus === 'BORRADOR';
   const isEditLockedByStatus =
     surveyStatus === 'EN_PROCESO' || surveyStatus === 'FINALIZADA';
   const hasReachedStartWindow = survey
     ? Date.now() >= new Date(survey.startDate).getTime()
     : false;
   const hasSurveyEnded = survey ? Date.now() > new Date(survey.endDate).getTime() : false;
-  const isEditLocked = isEditLockedByStatus || hasReachedStartWindow;
+  const isEditLocked = isEditLockedByStatus || (hasReachedStartWindow && !isDraftSurvey);
   const canEdit = canManage && !isEditLocked;
-  const canEditExtraQuestions = canEdit && (mode === 'create' || surveyStatus === 'BORRADOR');
+  const canEditExtraQuestions = canEdit && isDraftSurvey;
   const hasConfiguredReminders = Boolean(survey && survey.reminderSchedules.length > 0);
   const canImportParticipants = Boolean(
     mode === 'edit' &&
@@ -516,7 +476,7 @@ export function SurveyEditor({
 
     setScheduleDateTime(
       survey.initialSendScheduledAt
-        ? toDateTimeLocalValue(survey.initialSendScheduledAt)
+        ? toBoliviaDateTimeInputValue(survey.initialSendScheduledAt)
         : ''
     );
     setIsScheduleModalOpen(true);
@@ -534,8 +494,15 @@ export function SurveyEditor({
 
     setIsScheduling(true);
     try {
+      const scheduledAt = toBoliviaDateTimeIso(scheduleDateTime);
+
+      if (!scheduledAt) {
+        showToast('error', 'La fecha y hora Bolivia ingresadas no son válidas.');
+        return;
+      }
+
       const updated = await scheduleSurveySendClient(companySlug, survey.slug, {
-        scheduledAt: scheduleDateTime
+        scheduledAt
       });
 
       setSurvey(updated);
@@ -625,7 +592,15 @@ export function SurveyEditor({
     const reminderPayload = reminderRows
       .map((row) => row.scheduledAt.trim())
       .filter((value) => value.length > 0)
-      .map((scheduledAt) => ({ scheduledAt }));
+      .map((scheduledAt) => {
+        const normalized = toBoliviaDateTimeIso(scheduledAt);
+
+        if (!normalized) {
+          throw new Error('INVALID_BOLIVIA_REMINDER_DATE');
+        }
+
+        return { scheduledAt: normalized };
+      });
 
     if (reminderPayload.length === 0) {
       showToast('error', 'Debes cargar al menos un recordatorio antes de confirmar.');
@@ -646,6 +621,11 @@ export function SurveyEditor({
       showToast('success', 'Recordatorios actualizados.');
       router.refresh();
     } catch (error) {
+      if (error instanceof Error && error.message === 'INVALID_BOLIVIA_REMINDER_DATE') {
+        showToast('error', 'Uno de los recordatorios no tiene una fecha y hora Bolivia válidas.');
+        return;
+      }
+
       showToast('error', getApiErrorMessage(error));
     } finally {
       setIsSavingReminders(false);
@@ -766,7 +746,7 @@ export function SurveyEditor({
             <p>
               <span className="font-medium">Envío inicial:</span>{' '}
               {survey.initialSendScheduledAt
-                ? dateTimeFormatter.format(new Date(survey.initialSendScheduledAt))
+                ? formatBoliviaDateTime(survey.initialSendScheduledAt)
                 : 'Sin programar'}
             </p>
             <p>
@@ -1319,7 +1299,7 @@ export function SurveyEditor({
                   return (
                     <tr key={schedule.id} className="align-top">
                       <td className="px-4 py-3 text-slate-700">
-                        {dateTimeFormatter.format(new Date(schedule.scheduledAt))}
+                        {formatBoliviaDateTime(schedule.scheduledAt)}
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -1345,10 +1325,10 @@ export function SurveyEditor({
                       </td>
                       <td className="px-4 py-3 text-slate-700">{schedule.attemptCount}</td>
                       <td className="px-4 py-3 text-slate-700">
-                        {formatOptionalDateTime(schedule.lastAttemptAt)}
+                        {formatBoliviaDateTime(schedule.lastAttemptAt)}
                       </td>
                       <td className="px-4 py-3 text-slate-700">
-                        {formatOptionalDateTime(schedule.nextRetryAt)}
+                        {formatBoliviaDateTime(schedule.nextRetryAt)}
                       </td>
                     </tr>
                   );
@@ -1366,17 +1346,22 @@ export function SurveyEditor({
         >
           <h3 className="text-lg font-semibold text-ink">Programar envíos</h3>
           <p className="mt-1 text-sm text-slate-600">
-            Define la fecha y hora del envío inicial de invitaciones.
+            Define la fecha y hora del envío inicial de invitaciones en Hora Bolivia (UTC-4).
           </p>
 
           <div className="mt-4 space-y-1">
-            <label className="text-sm font-medium text-slate-700">Fecha y hora</label>
+            <label className="text-sm font-medium text-slate-700">
+              Fecha y hora Bolivia (UTC-4)
+            </label>
             <input
               type="datetime-local"
               value={scheduleDateTime}
               onChange={(event) => setScheduleDateTime(event.target.value)}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
             />
+            <p className="text-xs text-slate-500">
+              La programación se guardará y se ejecutará respetando la zona horaria de La Paz.
+            </p>
           </div>
 
           <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -1407,7 +1392,7 @@ export function SurveyEditor({
         >
           <h3 className="text-lg font-semibold text-ink">Programar recordatorios</h3>
           <p className="mt-1 text-sm text-slate-600">
-            Configura recordatorios futuros para quienes no iniciaron o no terminaron. Los ya enviados permanecen en el historial.
+            Configura recordatorios futuros para quienes no iniciaron o no terminaron. Todos se interpretan en Hora Bolivia (UTC-4) y los ya enviados permanecen en el historial.
           </p>
 
           <div className="mt-4 space-y-3">
@@ -1433,6 +1418,7 @@ export function SurveyEditor({
                   onChange={(event) => setReminderValue(row.id, event.target.value)}
                   className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
                 />
+                <p className="mt-2 text-xs text-slate-500">Hora Bolivia (UTC-4).</p>
               </div>
             ))}
           </div>

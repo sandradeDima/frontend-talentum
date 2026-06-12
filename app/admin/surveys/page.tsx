@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireSession } from '@/lib/auth-session';
 import { extractErrorMessage } from '@/lib/auth-shared';
+import { formatBoliviaDate } from '@/lib/bolivia-time';
 import { getGlobalSurveyCampaignsServer } from '@/services/survey.server';
 import type { SurveyCampaignStatus } from '@/types/survey';
 import { SurveyStatusBadge } from '@/components/admin/survey-status-badge';
@@ -14,10 +15,6 @@ type AdminSurveysPageProps = {
     status?: string;
   }>;
 };
-
-const dateFormatter = new Intl.DateTimeFormat('es-BO', {
-  dateStyle: 'medium'
-});
 
 const statusOptions: Array<{ value: SurveyCampaignStatus; label: string }> = [
   { value: 'BORRADOR', label: 'Borrador' },
@@ -182,13 +179,13 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
                         </Link>
                       </td>
                       <td className="px-4 py-3 text-slate-700">
-                        {dateFormatter.format(new Date(row.createdAt))}
+                        {formatBoliviaDate(row.createdAt)}
                       </td>
                       <td className="px-4 py-3 text-slate-700">
-                        {dateFormatter.format(new Date(row.startDate))}
+                        {formatBoliviaDate(row.startDate)}
                       </td>
                       <td className="px-4 py-3 text-slate-700">
-                        {dateFormatter.format(new Date(row.endDate))}
+                        {formatBoliviaDate(row.endDate)}
                       </td>
                       <td className="px-4 py-3">
                         <SurveyStatusBadge

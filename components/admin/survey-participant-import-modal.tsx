@@ -18,7 +18,6 @@ import { AdminModal } from './admin-modal';
 const MAX_IMPORT_FILE_BYTES = 10 * 1024 * 1024;
 const MAX_ERROR_ROWS_TO_RENDER = 200;
 const MAX_CREDENTIAL_ROWS_TO_RENDER = 30;
-const MAX_INVITATION_FAILURE_ROWS_TO_RENDER = 50;
 const SAMPLE_TEMPLATE_PATH = '/templates/plantilla-importacion-participantes.xlsx';
 
 const dateTimeFormatter = new Intl.DateTimeFormat('es-BO', {
@@ -76,7 +75,6 @@ const buildFileFingerprint = (
     credentialType: RespondentCredentialType;
     credentialExpiresAt: string;
     regenerateCredentials: boolean;
-    sendInvitations: boolean;
     includeRawCredentials: boolean;
   }
 ): string | null => {
@@ -92,7 +90,6 @@ const buildFileFingerprint = (
     options.credentialType,
     options.credentialExpiresAt,
     options.regenerateCredentials,
-    options.sendInvitations,
     options.includeRawCredentials
   ].join('|');
 };
@@ -109,7 +106,6 @@ export function SurveyParticipantImportModal({
   const [credentialType] = useState<RespondentCredentialType>('PIN');
   const [credentialExpiresAt, setCredentialExpiresAt] = useState('');
   const [regenerateCredentials, setRegenerateCredentials] = useState(false);
-  const [sendInvitations, setSendInvitations] = useState(false);
   const [includeRawCredentials, setIncludeRawCredentials] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [validationResult, setValidationResult] =
@@ -125,7 +121,6 @@ export function SurveyParticipantImportModal({
       credentialType,
       credentialExpiresAt,
       regenerateCredentials,
-      sendInvitations,
       includeRawCredentials
     }),
     [
@@ -133,7 +128,6 @@ export function SurveyParticipantImportModal({
       credentialType,
       credentialExpiresAt,
       regenerateCredentials,
-      sendInvitations,
       includeRawCredentials
     ]
   );
@@ -163,7 +157,6 @@ export function SurveyParticipantImportModal({
     setGenerateCredentials(true);
     setCredentialExpiresAt('');
     setRegenerateCredentials(false);
-    setSendInvitations(false);
     setIncludeRawCredentials(false);
     clearExecutionState();
   }, [clearExecutionState]);
@@ -212,13 +205,6 @@ export function SurveyParticipantImportModal({
       return;
     }
 
-    if (sendInvitations && !generateCredentials) {
-      setRequestError(
-        'Para enviar invitaciones debes mantener habilitada la generación de credenciales.'
-      );
-      return;
-    }
-
     setRequestError(null);
 
     if (dryRun) {
@@ -235,7 +221,6 @@ export function SurveyParticipantImportModal({
         credentialType,
         credentialExpiresAt: credentialExpiresAt.trim() || undefined,
         regenerateCredentials,
-        sendInvitations: dryRun ? false : sendInvitations,
         includeRawCredentials
       });
 
@@ -341,7 +326,6 @@ export function SurveyParticipantImportModal({
                   setGenerateCredentials(checked);
 
                   if (!checked) {
-                    setSendInvitations(false);
                     setRegenerateCredentials(false);
                     setIncludeRawCredentials(false);
                   }
@@ -356,32 +340,12 @@ export function SurveyParticipantImportModal({
             <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
               <input
                 type="checkbox"
-                checked={sendInvitations}
-                onChange={(event) => {
-                  const checked = event.target.checked;
-                  setSendInvitations(checked);
-
-                  if (checked) {
-                    setRegenerateCredentials(true);
-                  }
-
-                  clearExecutionState();
-                }}
-                disabled={!generateCredentials}
-                className="mt-0.5"
-              />
-              Enviar invitaciones por correo después de generar credenciales
-            </label>
-
-            <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
-              <input
-                type="checkbox"
                 checked={regenerateCredentials}
                 onChange={(event) => {
                   setRegenerateCredentials(event.target.checked);
                   clearExecutionState();
                 }}
-                disabled={!generateCredentials || sendInvitations}
+                disabled={!generateCredentials}
                 className="mt-0.5"
               />
               Forzar credenciales nuevas (revoca credenciales activas previas)
@@ -477,9 +441,7 @@ export function SurveyParticipantImportModal({
               {importResult.summary.updatedRespondents ?? 0}
             </p>
             <p className="mt-1 text-sm text-emerald-900/90">
-              Credenciales: {importResult.summary.credentialsGenerated ?? 0} | Invitaciones
-              enviadas: {importResult.summary.invitationsSent ?? 0} | Fallos de invitación:{' '}
-              {importResult.summary.invitationFailures ?? 0}
+              Credenciales generadas: {importResult.summary.credentialsGenerated ?? 0}
             </p>
             {importResult.summary.invalidRows > 0 ? (
               <p className="mt-1 text-xs text-emerald-800">
@@ -524,36 +486,6 @@ export function SurveyParticipantImportModal({
                 con error.
               </p>
             ) : null}
-          </section>
-        ) : null}
-
-        {importResult?.invitationFailures && importResult.invitationFailures.length > 0 ? (
-          <section className="mt-4 overflow-hidden rounded-xl border border-rose-200">
-            <header className="border-b border-rose-200 bg-rose-50 px-4 py-2">
-              <h4 className="text-sm font-semibold text-rose-900">
-                Fallos de invitación ({importResult.invitationFailures.length})
-              </h4>
-            </header>
-            <div className="max-h-44 overflow-auto bg-white">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
-                  <tr>
-                    <th className="px-3 py-2 font-semibold">Respondente</th>
-                    <th className="px-3 py-2 font-semibold">Motivo</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {importResult.invitationFailures
-                    .slice(0, MAX_INVITATION_FAILURE_ROWS_TO_RENDER)
-                    .map((failure) => (
-                      <tr key={`${failure.respondentId}:${failure.reason}`}>
-                        <td className="px-3 py-2 text-slate-700">{failure.respondentId}</td>
-                        <td className="px-3 py-2 text-slate-700">{failure.reason}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
           </section>
         ) : null}
 

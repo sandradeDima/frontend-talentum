@@ -4,6 +4,12 @@ import Link from 'next/link';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  formatBoliviaDate,
+  formatBoliviaDateTime,
+  toBoliviaDateTimeInputValue,
+  toBoliviaDateTimeIso
+} from '@/lib/bolivia-time';
+import {
   closeSurveyCampaignClient,
   finalizeSurveyCampaignClient,
   scheduleSurveySendClient
@@ -32,15 +38,6 @@ import { AdminModal } from './admin-modal';
 import { SurveyParticipantImportModal } from './survey-participant-import-modal';
 import { SurveyStatusBadge } from './survey-status-badge';
 
-const dateFormatter = new Intl.DateTimeFormat('es-BO', {
-  dateStyle: 'medium'
-});
-
-const dateTimeFormatter = new Intl.DateTimeFormat('es-BO', {
-  dateStyle: 'medium',
-  timeStyle: 'short'
-});
-
 type ToastState = {
   kind: 'success' | 'error';
   message: string;
@@ -53,34 +50,6 @@ type SurveyOperationsDashboardProps = {
   initialSurvey: SurveyCampaignDetail;
   initialOperationsSummary: SurveyCampaignOperationsSummary | null;
   initialSummaryError?: string | null;
-};
-
-const toDateTimeLocalValue = (isoDate: string): string => {
-  const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, '0');
-  const day = `${date.getDate()}`.padStart(2, '0');
-  const hour = `${date.getHours()}`.padStart(2, '0');
-  const minute = `${date.getMinutes()}`.padStart(2, '0');
-
-  return `${year}-${month}-${day}T${hour}:${minute}`;
-};
-
-const formatOptionalDateTime = (value: string | null): string => {
-  if (!value) {
-    return 'Sin registro';
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return 'Sin registro';
-  }
-
-  return dateTimeFormatter.format(parsed);
 };
 
 const getApiErrorMessage = (error: unknown): string => {
@@ -353,7 +322,9 @@ export function SurveyOperationsDashboard({
 
   const openScheduleModal = () => {
     setScheduleDateTime(
-      survey.initialSendScheduledAt ? toDateTimeLocalValue(survey.initialSendScheduledAt) : ''
+      survey.initialSendScheduledAt
+        ? toBoliviaDateTimeInputValue(survey.initialSendScheduledAt)
+        : ''
     );
     setIsScheduleModalOpen(true);
   };
@@ -366,8 +337,15 @@ export function SurveyOperationsDashboard({
 
     setIsSchedulingSend(true);
     try {
+      const scheduledAt = toBoliviaDateTimeIso(scheduleDateTime);
+
+      if (!scheduledAt) {
+        showToast('error', 'La fecha y hora Bolivia ingresadas no son válidas.');
+        return;
+      }
+
       const updatedSurvey = await scheduleSurveySendClient(companySlug, survey.slug, {
-        scheduledAt: scheduleDateTime
+        scheduledAt
       });
 
       setSurvey(updatedSurvey);
@@ -611,15 +589,15 @@ export function SurveyOperationsDashboard({
           <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
             <p>
               <span className="font-medium">Inicio:</span>{' '}
-              {dateFormatter.format(new Date(survey.startDate))}
+              {formatBoliviaDate(survey.startDate)}
             </p>
             <p>
               <span className="font-medium">Fin:</span>{' '}
-              {dateFormatter.format(new Date(survey.endDate))}
+              {formatBoliviaDate(survey.endDate)}
             </p>
             <p>
               <span className="font-medium">Envío inicial:</span>{' '}
-              {formatOptionalDateTime(survey.initialSendScheduledAt)}
+              {formatBoliviaDateTime(survey.initialSendScheduledAt)}
             </p>
             <p>
               <span className="font-medium">Recordatorios:</span>{' '}
@@ -627,7 +605,7 @@ export function SurveyOperationsDashboard({
             </p>
             <p>
               <span className="font-medium">Finalizada:</span>{' '}
-              {formatOptionalDateTime(survey.finalizedAt)}
+              {formatBoliviaDateTime(survey.finalizedAt)}
             </p>
             <p className="sm:col-span-2">
               <span className="font-medium">Link genérico:</span>{' '}
@@ -669,7 +647,7 @@ export function SurveyOperationsDashboard({
               </p>
               <p className="text-xs text-slate-500">
                 Última actualización de padrón:{' '}
-                {formatOptionalDateTime(operationsSummary.participants.lastImportedAt)}
+                {formatBoliviaDateTime(operationsSummary.participants.lastImportedAt)}
               </p>
 
               {operationsSummary.participants.total === 0 ? (
@@ -757,7 +735,7 @@ export function SurveyOperationsDashboard({
                 </div>
                 <p className="text-xs text-slate-500">
                   Última emisión:{' '}
-                  {formatOptionalDateTime(operationsSummary.credentials.latestIssuedAt)}
+                  {formatBoliviaDateTime(operationsSummary.credentials.latestIssuedAt)}
                 </p>
               </>
             ) : (
@@ -808,7 +786,7 @@ export function SurveyOperationsDashboard({
             </p>
             <p>
               <span className="font-medium">Próximo:</span>{' '}
-              {formatOptionalDateTime(operationsSummary.reminders.nextScheduledAt)}
+              {formatBoliviaDateTime(operationsSummary.reminders.nextScheduledAt)}
             </p>
           </div>
         ) : (
@@ -842,7 +820,7 @@ export function SurveyOperationsDashboard({
                   return (
                     <tr key={schedule.id}>
                       <td className="px-3 py-2 text-slate-700">
-                        {dateTimeFormatter.format(new Date(schedule.scheduledAt))}
+                        {formatBoliviaDateTime(schedule.scheduledAt)}
                       </td>
                       <td className="px-3 py-2">
                         <span
@@ -875,11 +853,11 @@ export function SurveyOperationsDashboard({
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-ink">Programar envío inicial</h3>
             <p className="text-sm text-slate-600">
-              Programa este paso después de cargar participantes para dejar lista la campaña.
+              Programa este paso después de cargar participantes para dejar lista la campaña en Hora Bolivia (UTC-4).
             </p>
             <div className="space-y-1">
               <label htmlFor="initial-send-at" className="text-sm font-medium text-slate-700">
-                Fecha y hora
+                Fecha y hora Bolivia (UTC-4)
               </label>
               <input
                 id="initial-send-at"
@@ -888,6 +866,9 @@ export function SurveyOperationsDashboard({
                 onChange={(event) => setScheduleDateTime(event.target.value)}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand transition focus:ring-2"
               />
+              <p className="text-xs text-slate-500">
+                La campaña guardará esta programación en la zona horaria de La Paz.
+              </p>
             </div>
             <div className="flex flex-wrap justify-end gap-2">
               <button
