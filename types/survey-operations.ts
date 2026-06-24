@@ -1,4 +1,5 @@
 import type { RespondentCredentialType, SurveyResponseStatus } from '@/types/respondent-survey';
+import type { InitialSendStatus } from '@/types/survey';
 
 export type RespondentImportMimeType =
   | 'text/csv'
@@ -90,6 +91,15 @@ export type SurveyCampaignOperationsSummary = {
       PIN: number;
     };
     latestIssuedAt: string | null;
+  };
+  initialSend: {
+    scheduledAt: string | null;
+    status: InitialSendStatus | null;
+    attemptCount: number;
+    lastAttemptAt: string | null;
+    processedAt: string | null;
+    nextRetryAt: string | null;
+    errorMessage: string | null;
   };
   reminders: {
     totalSchedules: number;

@@ -31,6 +31,7 @@ import { extractErrorMessage } from '@/lib/auth-shared';
 import { ApiRequestError } from '@/types/api';
 import type {
   SurveyCampaignDetail,
+  InitialSendStatus,
   SurveyLifecycleState,
   SurveyCampaignStatus,
   SurveyCampaignUpsertInput
@@ -72,6 +73,28 @@ const lifecycleStateCopy: Record<
   FINALIZED: {
     label: 'Finalizada',
     description: 'Estado final operativo. No admite nuevas transiciones.'
+  }
+};
+
+const initialSendStatusPresentation: Record<
+  InitialSendStatus,
+  { label: string; className: string }
+> = {
+  PENDING: {
+    label: 'Pendiente',
+    className: 'bg-sky-50 text-sky-700 ring-sky-200'
+  },
+  PROCESSING: {
+    label: 'Enviando',
+    className: 'bg-amber-50 text-amber-700 ring-amber-200'
+  },
+  COMPLETED: {
+    label: 'Enviado',
+    className: 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+  },
+  FAILED: {
+    label: 'Fallido',
+    className: 'bg-rose-50 text-rose-700 ring-rose-200'
   }
 };
 
@@ -748,6 +771,15 @@ export function SurveyEditor({
               {survey.initialSendScheduledAt
                 ? formatBoliviaDateTime(survey.initialSendScheduledAt)
                 : 'Sin programar'}
+              {survey.initialSendStatus ? (
+                <span
+                  className={`ml-2 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${
+                    initialSendStatusPresentation[survey.initialSendStatus].className
+                  }`}
+                >
+                  {initialSendStatusPresentation[survey.initialSendStatus].label}
+                </span>
+              ) : null}
             </p>
             <p>
               <span className="font-medium">Recordatorios:</span>{' '}
@@ -1167,7 +1199,7 @@ export function SurveyEditor({
               disabled={isEditLocked}
               className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Programar envíos
+              Programar envío inicial
             </button>
 
             {canActivateNow ? (
@@ -1371,7 +1403,7 @@ export function SurveyEditor({
               disabled={isScheduling}
               className="rounded-lg border border-cooltura-lime/80 bg-cooltura-lime px-4 py-2 text-sm font-medium text-cooltura-dark transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isScheduling ? 'Programando...' : 'Programar'}
+              {isScheduling ? 'Programando...' : 'Agendar envío'}
             </button>
             <button
               type="button"

@@ -29,7 +29,7 @@ import {
 import { isSurveyImportEnabled } from '@/lib/survey-operations';
 import { extractErrorMessage } from '@/lib/auth-shared';
 import { ApiRequestError } from '@/types/api';
-import type { SurveyCampaignDetail } from '@/types/survey';
+import type { InitialSendStatus, SurveyCampaignDetail } from '@/types/survey';
 import type {
   ImportSurveyRespondentsResult,
   SurveyCampaignOperationsSummary
@@ -52,6 +52,28 @@ type SurveyOperationsDashboardProps = {
   initialSummaryError?: string | null;
 };
 
+const initialSendStatusPresentation: Record<
+  InitialSendStatus,
+  { label: string; className: string }
+> = {
+  PENDING: {
+    label: 'Pendiente',
+    className: 'bg-sky-50 text-sky-700 ring-sky-200'
+  },
+  PROCESSING: {
+    label: 'Enviando',
+    className: 'bg-amber-50 text-amber-700 ring-amber-200'
+  },
+  COMPLETED: {
+    label: 'Enviado',
+    className: 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+  },
+  FAILED: {
+    label: 'Fallido',
+    className: 'bg-rose-50 text-rose-700 ring-rose-200'
+  }
+};
+
 const getApiErrorMessage = (error: unknown): string => {
   if (error instanceof ApiRequestError) {
     switch (error.mensajeTecnico) {
@@ -59,6 +81,10 @@ const getApiErrorMessage = (error: unknown): string => {
         return 'Importa participantes antes de programar el envío inicial.';
       case 'SURVEY_INITIAL_SEND_REQUIRED':
         return 'Debes programar el envío inicial antes de continuar.';
+      case 'SURVEY_INITIAL_SEND_ALREADY_COMPLETED':
+        return 'El envío inicial ya fue procesado para esta campaña.';
+      case 'SURVEY_INITIAL_SEND_ALREADY_PROCESSING':
+        return 'El envío inicial ya está en proceso.';
       case 'INVALID_SURVEY_SEND_SCHEDULE':
         return 'La fecha u hora del envío inicial no es válida.';
       case 'SURVEY_SEND_MUST_BE_FUTURE':
@@ -176,6 +202,10 @@ export function SurveyOperationsDashboard({
   const hasParticipantSummary = Boolean(operationsSummary);
   const hasParticipants = participantTotal > 0;
   const hasParticipantsWithEmail = participantsWithEmail > 0;
+  const initialSendScheduledAt =
+    operationsSummary?.initialSend.scheduledAt ?? survey.initialSendScheduledAt;
+  const initialSendStatus =
+    operationsSummary?.initialSend.status ?? survey.initialSendStatus;
 
   const canImportParticipants = Boolean(
     canManage &&
@@ -208,7 +238,8 @@ export function SurveyOperationsDashboard({
   );
   const canSendInvitationsNow = Boolean(
     canManage &&
-      Boolean(survey.initialSendScheduledAt) &&
+      Boolean(initialSendScheduledAt) &&
+      (initialSendStatus === 'FAILED' || initialSendStatus === null) &&
       hasParticipantsWithEmail &&
       !survey.lifecycle.ended &&
       !isSendingInvitations &&
@@ -233,7 +264,7 @@ export function SurveyOperationsDashboard({
       : !hasParticipants
         ? 'Importa al menos un participante antes de programar el envío inicial.'
         : !survey.lifecycle.canScheduleInitialSend
-          ? survey.initialSendScheduledAt
+          ? initialSendScheduledAt
             ? 'El envío inicial ya fue programado para esta campaña.'
             : 'Esta campaña ya no puede programar un envío inicial en su estado actual.'
           : isClosingSurvey || isFinalizingSurvey
@@ -242,19 +273,25 @@ export function SurveyOperationsDashboard({
 
   const sendDisabledReason = !canManage
     ? 'Solo ADMIN puede enviar invitaciones.'
-    : !survey.initialSendScheduledAt
+    : !initialSendScheduledAt
       ? 'Programa primero el envío inicial para habilitar este paso.'
-      : !hasParticipantSummary
-        ? 'Actualiza el resumen para validar correos disponibles.'
-        : !hasParticipantsWithEmail
-          ? hasParticipants
-            ? 'No hay participantes activos con correo electrónico disponible.'
-            : 'Importa participantes con correo antes de enviar invitaciones.'
-          : survey.lifecycle.ended
-            ? 'La ventana de la encuesta ya terminó.'
-            : isClosingSurvey || isFinalizingSurvey
-              ? 'Espera a que termine la transición actual de la encuesta.'
-              : null;
+      : initialSendStatus === 'PENDING'
+        ? 'El envío inicial está agendado y se enviará automáticamente en la fecha programada.'
+        : initialSendStatus === 'PROCESSING'
+          ? 'El envío inicial ya está en proceso.'
+          : initialSendStatus === 'COMPLETED'
+            ? 'El envío inicial ya fue enviado.'
+            : !hasParticipantSummary
+              ? 'Actualiza el resumen para validar correos disponibles.'
+              : !hasParticipantsWithEmail
+                ? hasParticipants
+                  ? 'No hay participantes activos con correo electrónico disponible.'
+                  : 'Importa participantes con correo antes de enviar invitaciones.'
+                : survey.lifecycle.ended
+                  ? 'La ventana de la encuesta ya terminó.'
+                  : isClosingSurvey || isFinalizingSurvey
+                    ? 'Espera a que termine la transición actual de la encuesta.'
+                    : null;
 
   const closeDisabledReason = !canManage
     ? 'Solo ADMIN puede cerrar la encuesta.'
@@ -482,7 +519,7 @@ export function SurveyOperationsDashboard({
         </div>
 
         <p className="mt-4 text-xs font-medium text-slate-500">
-          Flujo recomendado: importa participantes, programa el envío inicial y luego envía invitaciones.
+          Flujo recomendado: importa participantes, agenda el envío inicial y configura recordatorios.
         </p>
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -508,7 +545,7 @@ export function SurveyOperationsDashboard({
             disabled={!canSendInvitationsNow}
             disabledReason={sendDisabledReason}
           >
-            {isSendingInvitations ? 'Enviando invitaciones...' : 'Enviar invitaciones ahora'}
+            {isSendingInvitations ? 'Enviando invitaciones...' : 'Reintentar invitaciones'}
           </ActionButton>
           <ActionButton
             tone="warning"
@@ -597,8 +634,23 @@ export function SurveyOperationsDashboard({
             </p>
             <p>
               <span className="font-medium">Envío inicial:</span>{' '}
-              {formatBoliviaDateTime(survey.initialSendScheduledAt)}
+              {formatBoliviaDateTime(initialSendScheduledAt)}
+              {initialSendStatus ? (
+                <span
+                  className={`ml-2 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${
+                    initialSendStatusPresentation[initialSendStatus].className
+                  }`}
+                >
+                  {initialSendStatusPresentation[initialSendStatus].label}
+                </span>
+              ) : null}
             </p>
+            {operationsSummary?.initialSend.nextRetryAt ? (
+              <p>
+                <span className="font-medium">Reintento envío inicial:</span>{' '}
+                {formatBoliviaDateTime(operationsSummary.initialSend.nextRetryAt)}
+              </p>
+            ) : null}
             <p>
               <span className="font-medium">Recordatorios:</span>{' '}
               {survey.reminderSchedules.length > 0 ? 'Configurados' : 'Sin configurar'}
@@ -885,7 +937,7 @@ export function SurveyOperationsDashboard({
                 className="rounded-lg border border-cooltura-lime/80 bg-cooltura-lime px-3 py-1.5 text-sm font-medium text-cooltura-dark transition hover:brightness-105 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-500"
                 disabled={isSchedulingSend}
               >
-                {isSchedulingSend ? 'Guardando...' : 'Confirmar envío'}
+                {isSchedulingSend ? 'Guardando...' : 'Agendar envío'}
               </button>
             </div>
           </div>

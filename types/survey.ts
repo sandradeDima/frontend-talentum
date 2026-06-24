@@ -4,6 +4,12 @@ export type SurveyCampaignStatus =
   | 'EN_PROCESO'
   | 'FINALIZADA';
 
+export type InitialSendStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'FAILED'
+  | 'COMPLETED';
+
 export type SurveyTemplateKey = 'BASE_CLIMA_V1';
 
 export type SurveyLifecycleState =
@@ -36,6 +42,12 @@ export type SurveyCampaignSummary = {
   endDate: string;
   totalEnabledDays: number;
   initialSendScheduledAt: string | null;
+  initialSendStatus: InitialSendStatus | null;
+  initialSendAttemptCount: number;
+  initialSendLastAttemptAt: string | null;
+  initialSendProcessedAt: string | null;
+  initialSendNextRetryAt: string | null;
+  initialSendErrorMessage: string | null;
   remindersLockedAt: string | null;
   remindersLocked: boolean;
   finalizedAt: string | null;

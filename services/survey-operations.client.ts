@@ -63,7 +63,14 @@ export const sendSurveyInvitationsNowClient = async (
   companySlug: string,
   surveySlug: string
 ) => {
-  return requestApiClient<{ summary: { respondents: number; invitationsSent: number; invitationFailures: number } }>(
+  return requestApiClient<{
+    summary: {
+      respondents: number;
+      invitationsSent: number;
+      invitationFailures: number;
+      invitationsSkipped?: number;
+    };
+  }>(
     `/companies/${encodeURIComponent(companySlug)}/surveys/${encodeURIComponent(surveySlug)}/respondents/invitations/send`,
     { method: 'POST' }
   );
