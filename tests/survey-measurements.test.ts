@@ -30,6 +30,7 @@ const makeSurvey = (input: {
   remindersLockedAt: null,
   remindersLocked: false,
   finalizedAt: input.finalizedAt ?? null,
+  tutorialVideoUrl: null,
   genericLinkPath: '/survey/test',
   lifecycle: {
     state: input.state,

@@ -6,12 +6,16 @@ import {
   formatFileSize,
   resolveRespondentImportMimeType
 } from '@/lib/survey-operations';
-import { importSurveyRespondentsClient } from '@/services/survey-operations.client';
+import {
+  importSurveyRespondentsClient,
+  listSurveyRespondentsClient
+} from '@/services/survey-operations.client';
 import { ApiRequestError } from '@/types/api';
 import type { RespondentCredentialType } from '@/types/respondent-survey';
 import type {
   ImportSurveyRespondentsResult,
-  ImportSurveyRespondentRowError
+  ImportSurveyRespondentRowError,
+  RespondentListItem
 } from '@/types/survey-operations';
 import { AdminModal } from './admin-modal';
 
@@ -114,6 +118,9 @@ export function SurveyParticipantImportModal({
   const [isValidating, setIsValidating] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [validatedFingerprint, setValidatedFingerprint] = useState<string | null>(null);
+  const [respondents, setRespondents] = useState<RespondentListItem[] | null>(null);
+  const [respondentsError, setRespondentsError] = useState<string | null>(null);
+  const [isLoadingRespondents, setIsLoadingRespondents] = useState(false);
 
   const options = useMemo(
     () => ({
@@ -152,6 +159,20 @@ export function SurveyParticipantImportModal({
     setValidatedFingerprint(null);
   }, []);
 
+  const loadRespondents = useCallback(async () => {
+    setIsLoadingRespondents(true);
+    setRespondentsError(null);
+
+    try {
+      const result = await listSurveyRespondentsClient(companySlug, surveySlug);
+      setRespondents(result);
+    } catch (error) {
+      setRespondentsError(extractErrorMessage(error));
+    } finally {
+      setIsLoadingRespondents(false);
+    }
+  }, [companySlug, surveySlug]);
+
   const resetFlow = useCallback(() => {
     setFile(null);
     setGenerateCredentials(true);
@@ -167,9 +188,31 @@ export function SurveyParticipantImportModal({
     }
   }, [isOpen, resetFlow]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    void loadRespondents();
+  }, [isOpen, loadRespondents]);
+
   if (!isOpen) {
     return null;
   }
+
+  const handleRequestClose = () => {
+    if (
+      file &&
+      typeof window !== 'undefined' &&
+      !window.confirm(
+        'Tienes un archivo cargado en esta importación. Si cierras el modal perderás esa carga. ¿Deseas continuar?'
+      )
+    ) {
+      return;
+    }
+
+    onClose();
+  };
 
   const validateSelectedFile = (): string | null => {
     if (!file) {
@@ -231,6 +274,7 @@ export function SurveyParticipantImportModal({
       } else {
         setImportResult(result);
         onImportCompleted?.(result);
+        await loadRespondents();
       }
     } catch (error) {
       setRequestError(mapImportApiError(error));
@@ -252,7 +296,7 @@ export function SurveyParticipantImportModal({
   const dismissible = !isValidating && !isImporting;
 
   return (
-    <AdminModal onClose={onClose} size="lg" dismissible={dismissible}>
+    <AdminModal onClose={handleRequestClose} size="lg" dismissible={dismissible}>
         <header className="space-y-2">
           <h3 className="text-lg font-semibold text-ink">Importar participantes</h3>
           <p className="text-sm text-slate-600">
@@ -271,6 +315,76 @@ export function SurveyParticipantImportModal({
             </p>
           </div>
         </header>
+
+        <section className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
+            <div>
+              <h4 className="text-sm font-semibold text-slate-900">Participantes ya importados</h4>
+              <p className="mt-0.5 text-xs text-slate-600">
+                Revisa quiénes ya están cargados antes de subir un nuevo archivo.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void loadRespondents()}
+              disabled={isLoadingRespondents}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isLoadingRespondents ? 'Actualizando...' : 'Actualizar'}
+            </button>
+          </header>
+
+          {respondentsError ? (
+            <p className="px-4 py-3 text-sm text-rose-700">{respondentsError}</p>
+          ) : isLoadingRespondents && respondents === null ? (
+            <p className="px-4 py-3 text-sm text-slate-500">Cargando participantes...</p>
+          ) : respondents !== null && respondents.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-slate-500">No hay participantes importados todavía.</p>
+          ) : respondents !== null ? (
+            <div className="max-h-64 overflow-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead className="sticky top-0 bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+                  <tr>
+                    <th className="px-3 py-2 font-semibold">Documento</th>
+                    <th className="px-3 py-2 font-semibold">Nombre</th>
+                    <th className="px-3 py-2 font-semibold">Email</th>
+                    <th className="px-3 py-2 font-semibold">Gerencia</th>
+                    <th className="px-3 py-2 font-semibold">Centro</th>
+                    <th className="px-3 py-2 font-semibold">Estado</th>
+                    <th className="px-3 py-2 font-semibold">Importado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {respondents.map((respondent) => (
+                    <tr key={respondent.id}>
+                      <td className="px-3 py-2 font-mono text-xs text-slate-700">
+                        {respondent.identifier ?? '—'}
+                      </td>
+                      <td className="px-3 py-2 text-slate-700">{respondent.fullName ?? '—'}</td>
+                      <td className="px-3 py-2 text-slate-500">{respondent.email ?? '—'}</td>
+                      <td className="px-3 py-2 text-slate-500">{respondent.gerencia ?? '—'}</td>
+                      <td className="px-3 py-2 text-slate-500">{respondent.centro ?? '—'}</td>
+                      <td className="px-3 py-2">
+                        {respondent.isActive ? (
+                          <span className="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200">
+                            Activo
+                          </span>
+                        ) : (
+                          <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">
+                            Inactivo
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-slate-500">
+                        {dateTimeFormatter.format(new Date(respondent.invitedAt))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </section>
 
         <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="grid gap-3 md:grid-cols-2">
@@ -404,7 +518,7 @@ export function SurveyParticipantImportModal({
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleRequestClose}
             disabled={!dismissible}
             className="ml-auto rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
           >

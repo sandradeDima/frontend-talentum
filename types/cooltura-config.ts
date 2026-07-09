@@ -15,3 +15,13 @@ export type CoolturaConfig = {
 };
 
 export type UpsertCoolturaConfigInput = Omit<CoolturaConfig, 'updatedAt'>;
+
+export type SendCoolturaTestEmailInput = {
+  to: string;
+};
+
+export type SendCoolturaTestEmailResult = {
+  to: string;
+  subject: string;
+  sentAt: string;
+};

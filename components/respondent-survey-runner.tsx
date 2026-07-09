@@ -438,6 +438,8 @@ export function RespondentSurveyRunner({
   const pendingAutosaveRef = useRef(false);
   const dirtyQuestionKeysRef = useRef<Set<string>>(new Set());
   const isSubmittingRef = useRef(false);
+  const pageTopRef = useRef<HTMLDivElement | null>(null);
+  const previousPageIndexRef = useRef(0);
 
   const pages = useMemo(() => buildPages(campaign), [campaign]);
 
@@ -697,11 +699,27 @@ export function RespondentSurveyRunner({
     };
   }, []);
 
-  const scrollToTop = () => {
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  const scrollToTop = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    if (typeof window === 'undefined') {
+      return;
     }
-  };
+
+    window.requestAnimationFrame(() => {
+      pageTopRef.current?.scrollIntoView({ behavior, block: 'start' });
+      window.scrollTo({ top: 0, left: 0, behavior });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (previousPageIndexRef.current === currentPageIndex) {
+      return;
+    }
+
+    previousPageIndexRef.current = currentPageIndex;
+    scrollToTop();
+  }, [currentPageIndex, scrollToTop]);
 
   const setAnswer = (questionKey: string, value: AnswerValue) => {
     if (answers[questionKey] === value) {
@@ -754,7 +772,6 @@ export function RespondentSurveyRunner({
 
     setValidationError(null);
     setCurrentPageIndex((previous) => Math.min(previous + 1, pages.length - 1));
-    scrollToTop();
   };
 
   const handlePrevious = () => {
@@ -768,7 +785,6 @@ export function RespondentSurveyRunner({
     }
 
     setCurrentPageIndex((previous) => Math.max(previous - 1, 0));
-    scrollToTop();
   };
 
   const handleSubmit = async () => {
@@ -845,6 +861,7 @@ export function RespondentSurveyRunner({
 
   return (
     <SurveyFlowLayout branding={branding}>
+      <div ref={pageTopRef} />
       {currentPage.kind === 'section-intro' ? (
         <SurveySectionIntroScreen
           title={currentPage.title}

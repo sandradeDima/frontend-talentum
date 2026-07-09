@@ -547,7 +547,7 @@ export function SurveyEditor({
 
     setIsActivatingNow(true);
     try {
-      // startDate is already in the past; backend will use it as scheduledAt for retroactive activation
+      // Reuse the survey start timestamp as an explicit "activate now" signal for the backend.
       const updated = await scheduleSurveySendClient(companySlug, survey.slug, {
         scheduledAt: survey.startDate
       });

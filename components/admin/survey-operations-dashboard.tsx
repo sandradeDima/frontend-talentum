@@ -91,6 +91,8 @@ const getApiErrorMessage = (error: unknown): string => {
         return 'El envío inicial debe programarse en una fecha y hora futura.';
       case 'SURVEY_SEND_AFTER_START':
         return 'El envío inicial debe ocurrir antes del inicio de la encuesta.';
+      case 'SURVEY_INITIAL_SEND_OUTSIDE_WINDOW':
+        return 'La fecha del envío inicial quedó fuera de la ventana permitida.';
       case 'SURVEY_CLOSE_REQUIRES_ACTIVE':
         return 'Solo puedes cerrar la encuesta cuando esté activa.';
       case 'SURVEY_FINALIZE_REQUIRES_CLOSED':

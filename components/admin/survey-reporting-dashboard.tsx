@@ -1,30 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  createDashboardExportJobClient,
-  listDashboardExportJobsClient,
+  downloadDashboardExportClient,
   getDashboardProgressClient,
   getDashboardResultsClient
 } from '@/services/dashboard.client';
 import { listSurveyRespondentsClient } from '@/services/survey-operations.client';
 import { finalizeSurveyCampaignClient } from '@/services/survey.client';
 import { extractErrorMessage } from '@/lib/auth-shared';
-import {
-  formatSupportedDashboardExportFormats,
-  isDashboardExportDownloadReady,
-  isDashboardExportPending
-} from '@/lib/dashboard-exports';
 import { deriveDashboardSuppressionDescriptor } from '@/lib/dashboard-suppression';
-import { env } from '@/lib/env';
 import { formatBoliviaDateTime } from '@/lib/bolivia-time';
 import { ApiRequestError } from '@/types/api';
 import type {
-  DashboardExportJobResult,
-  DashboardExportFormat,
-  DashboardExportJobStatus,
   DashboardGroupBy,
   DashboardProgressResult,
   DashboardResultsResult
@@ -47,27 +37,6 @@ const groupByDescriptions: Record<DashboardGroupBy, string> = {
 
 const numberFormatter = new Intl.NumberFormat('es-BO');
 
-const exportStatusPresentation: Record<
-  DashboardExportJobStatus,
-  { label: string; className: string }
-> = {
-  PENDING: {
-    label: 'Pendiente',
-    className: 'bg-slate-100 text-slate-700 ring-slate-200'
-  },
-  PROCESSING: {
-    label: 'Procesando',
-    className: 'bg-blue-50 text-blue-700 ring-blue-200'
-  },
-  COMPLETED: {
-    label: 'Completado',
-    className: 'bg-emerald-50 text-emerald-700 ring-emerald-200'
-  },
-  FAILED: {
-    label: 'Fallido',
-    className: 'bg-rose-50 text-rose-700 ring-rose-200'
-  }
-};
 
 const EMPTY_PROGRESS_ROWS: DashboardProgressResult['groups'] = [];
 const EMPTY_OVERALL_ROWS: DashboardResultsResult['overall'] = [];
@@ -83,9 +52,6 @@ type SurveyReportingDashboardProps = {
   initialProgress: DashboardProgressResult | null;
   initialResults: DashboardResultsResult | null;
   initialError: string | null;
-  initialExportJobs: DashboardExportJobResult[];
-  initialExportSupportedFormats: DashboardExportFormat[];
-  initialExportError: string | null;
 };
 
 const toPercent = (value: number): string => {
@@ -109,17 +75,6 @@ const formatDateTime = (value: string | null): string => {
   return formatBoliviaDateTime(value);
 };
 
-const resolveDownloadUrl = (value: string | null): string | null => {
-  if (!value) {
-    return null;
-  }
-
-  if (value.startsWith('http://') || value.startsWith('https://')) {
-    return value;
-  }
-
-  return `${env.backendOrigin}${value.startsWith('/') ? value : `/${value}`}`;
-};
 
 const resolveReportingError = (error: unknown): string => {
   if (error instanceof ApiRequestError) {
@@ -173,10 +128,7 @@ export function SurveyReportingDashboard({
   initialGroupBy,
   initialProgress,
   initialResults,
-  initialError,
-  initialExportJobs,
-  initialExportSupportedFormats,
-  initialExportError
+  initialError
 }: SurveyReportingDashboardProps) {
   const router = useRouter();
   const requestSequenceRef = useRef(0);
@@ -196,16 +148,9 @@ export function SurveyReportingDashboard({
   const [isLoadingRespondents, setIsLoadingRespondents] = useState(false);
   const [respondentsError, setRespondentsError] = useState<string | null>(null);
 
-  const [exportJobs, setExportJobs] = useState<DashboardExportJobResult[]>(initialExportJobs);
-  const [exportSupportedFormats, setExportSupportedFormats] = useState<DashboardExportFormat[]>(
-    initialExportSupportedFormats
-  );
-  const [isCreatingExport, setIsCreatingExport] = useState(false);
-  const [isRefreshingExports, setIsRefreshingExports] = useState(false);
-  const [exportError, setExportError] = useState<string | null>(initialExportError);
-  const [lastExportRefreshAt, setLastExportRefreshAt] = useState<Date | null>(() => {
-    return initialExportJobs.length > 0 ? new Date() : null;
-  });
+  const [isDownloadingExport, setIsDownloadingExport] = useState(false);
+  const [exportDownloadSuccess, setExportDownloadSuccess] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const refreshDashboard = useCallback(
     async (nextGroupBy: DashboardGroupBy) => {
@@ -249,50 +194,38 @@ export function SurveyReportingDashboard({
     [surveyState.slug]
   );
 
-  const refreshExportJobs = useCallback(
-    async (nextGroupBy: DashboardGroupBy, silent = false) => {
-      if (!silent) {
-        setIsRefreshingExports(true);
-      }
-
-      try {
-        const next = await listDashboardExportJobsClient({
-          surveySlug: surveyState.slug,
-          groupBy: nextGroupBy,
-          limit: 10
-        });
-        setExportJobs(next.jobs);
-        setExportSupportedFormats(next.supportedFormats);
-        setExportError(null);
-        setLastExportRefreshAt(new Date());
-      } catch (error) {
-        setExportError(resolveReportingError(error));
-      } finally {
-        if (!silent) {
-          setIsRefreshingExports(false);
-        }
-      }
-    },
-    [surveyState.slug]
-  );
-
-  const shouldPollExports = exportJobs.some(
-    (job) => isDashboardExportPending(job.status)
-  );
-
-  useEffect(() => {
-    if (!shouldPollExports) {
+  const handleDirectDownload = async () => {
+    if (!canManage) {
+      setExportError('Solo ADMIN puede generar exportaciones.');
       return;
     }
 
-    const intervalId = window.setInterval(() => {
-      void refreshExportJobs(groupBy, true);
-    }, 5000);
+    setIsDownloadingExport(true);
+    setExportError(null);
+    setExportDownloadSuccess(false);
 
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [groupBy, refreshExportJobs, shouldPollExports]);
+    try {
+      const { blob, fileName } = await downloadDashboardExportClient({
+        surveySlug: surveyState.slug,
+        groupBy
+      });
+
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = objectUrl;
+      anchor.download = fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(objectUrl);
+
+      setExportDownloadSuccess(true);
+    } catch (error) {
+      setExportError(extractErrorMessage(error));
+    } finally {
+      setIsDownloadingExport(false);
+    }
+  };
 
   const loadRespondents = useCallback(async () => {
     if (isLoadingRespondents) {
@@ -326,29 +259,8 @@ export function SurveyReportingDashboard({
 
     setGroupBy(value);
     setExportError(null);
-    await Promise.all([refreshDashboard(value), refreshExportJobs(value)]);
-  };
-
-  const handleCreateExport = async () => {
-    if (!canManage) {
-      setExportError('Solo ADMIN puede generar nuevas exportaciones.');
-      return;
-    }
-
-    setIsCreatingExport(true);
-    setExportError(null);
-
-    try {
-      await createDashboardExportJobClient({
-        surveySlug: surveyState.slug,
-        groupBy
-      });
-      await refreshExportJobs(groupBy, true);
-    } catch (error) {
-      setExportError(resolveReportingError(error));
-    } finally {
-      setIsCreatingExport(false);
-    }
+    setExportDownloadSuccess(false);
+    await refreshDashboard(value);
   };
 
   const handleFinalizeSurvey = async () => {
@@ -376,7 +288,6 @@ export function SurveyReportingDashboard({
     }
   };
 
-  const latestExportJob = exportJobs[0] ?? null;
 
   const progressRows = progress?.groups ?? EMPTY_PROGRESS_ROWS;
   const overallRows = results?.overall ?? EMPTY_OVERALL_ROWS;
@@ -397,30 +308,6 @@ export function SurveyReportingDashboard({
   const totalNumericAnswers = useMemo(() => {
     return overallRows.reduce((acc, item) => acc + item.answerCount, 0);
   }, [overallRows]);
-
-  const latestExportStatusMessage = useMemo(() => {
-    if (!latestExportJob) {
-      return null;
-    }
-
-    if (latestExportJob.status === 'PENDING') {
-      return 'La exportación está en cola y se procesará cuando el worker tome el job.';
-    }
-
-    if (latestExportJob.status === 'PROCESSING') {
-      return `La exportación está en proceso (intento ${latestExportJob.attemptCount}/${latestExportJob.maxAttempts}).`;
-    }
-
-    if (latestExportJob.status === 'COMPLETED') {
-      return 'La exportación terminó correctamente y está lista para descarga.';
-    }
-
-    if (latestExportJob.nextRetryAt && latestExportJob.attemptCount < latestExportJob.maxAttempts) {
-      return `El último intento falló (${latestExportJob.attemptCount}/${latestExportJob.maxAttempts}). Reintento programado para ${formatDateTime(latestExportJob.nextRetryAt)}.`;
-    }
-
-    return `La exportación falló tras ${latestExportJob.attemptCount} intento(s).`;
-  }, [latestExportJob]);
 
   return (
     <section className="space-y-4">
@@ -456,19 +343,19 @@ export function SurveyReportingDashboard({
           </label>
           <button
             type="button"
-            onClick={() => void Promise.all([refreshDashboard(groupBy), refreshExportJobs(groupBy)])}
-            disabled={isLoadingDashboard || isRefreshingExports}
+            onClick={() => void Promise.all([refreshDashboard(groupBy)])}
+            disabled={isLoadingDashboard}
             className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100"
           >
-            {isLoadingDashboard || isRefreshingExports ? 'Actualizando...' : 'Actualizar'}
+            {isLoadingDashboard ? 'Actualizando...' : 'Actualizar'}
           </button>
           <button
             type="button"
-            onClick={handleCreateExport}
-            disabled={!canManage || isCreatingExport || isLoadingDashboard}
+            onClick={() => void handleDirectDownload()}
+            disabled={!canManage || isDownloadingExport || isLoadingDashboard}
             className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-cooltura-dark transition hover:bg-brandDark disabled:cursor-not-allowed disabled:bg-slate-300"
           >
-            {isCreatingExport ? 'Generando exportación...' : 'Exportar XLSX'}
+            {isDownloadingExport ? 'Generando...' : 'Exportar XLSX'}
           </button>
           <Link
             href={`/admin/companies/${companySlug}/surveys/${surveyState.slug}/operations`}
@@ -693,16 +580,10 @@ export function SurveyReportingDashboard({
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           label="Participantes"
-          value={
-            suppression.metricsUnavailable && !aggregateVisible
-              ? 'N/D'
-              : numberFormatter.format(progress?.totals.totalRespondents ?? 0)
-          }
+          value={numberFormatter.format(progress?.totals.totalRespondents ?? 0)}
           helper={
-            suppression.metricsUnavailable && !aggregateVisible
-              ? 'No visible por anonimización del corte seleccionado.'
-              : aggregateOnlyVisible
-                ? 'Mostramos solo el agregado general de la campaña; los cortes por grupo siguen ocultos.'
+            aggregateOnlyVisible
+              ? 'Agregado general de la campaña; los cortes por grupo están ocultos por anonimato.'
               : suppression.metricsArePartial
                 ? 'Solo participantes dentro de segmentos visibles.'
                 : 'Total de participantes activos en el scope visible.'
@@ -710,16 +591,10 @@ export function SurveyReportingDashboard({
         />
         <MetricCard
           label="Iniciaron"
-          value={
-            suppression.metricsUnavailable && !aggregateVisible
-              ? 'N/D'
-              : numberFormatter.format(progress?.totals.startedRespondents ?? 0)
-          }
+          value={numberFormatter.format(progress?.totals.startedRespondents ?? 0)}
           helper={
-            suppression.metricsUnavailable && !aggregateVisible
-              ? 'No visible por anonimización del corte seleccionado.'
-              : aggregateOnlyVisible
-                ? 'Mostramos solo el agregado general de la campaña; los cortes por grupo siguen ocultos.'
+            aggregateOnlyVisible
+              ? 'Agregado general de la campaña; los cortes por grupo están ocultos por anonimato.'
               : suppression.metricsArePartial
                 ? 'Solo respuestas iniciadas en segmentos visibles.'
                 : 'Respuestas con sesión iniciada.'
@@ -727,16 +602,10 @@ export function SurveyReportingDashboard({
         />
         <MetricCard
           label="Enviaron"
-          value={
-            suppression.metricsUnavailable && !aggregateVisible
-              ? 'N/D'
-              : numberFormatter.format(progress?.totals.submittedRespondents ?? 0)
-          }
+          value={numberFormatter.format(progress?.totals.submittedRespondents ?? 0)}
           helper={
-            suppression.metricsUnavailable && !aggregateVisible
-              ? 'No visible por anonimización del corte seleccionado.'
-              : aggregateOnlyVisible
-                ? 'Mostramos solo el agregado general de la campaña; los cortes por grupo siguen ocultos.'
+            aggregateOnlyVisible
+              ? 'Agregado general de la campaña; los cortes por grupo están ocultos por anonimato.'
               : suppression.metricsArePartial
                 ? 'Solo envíos de segmentos visibles.'
                 : 'Respuestas completadas y enviadas.'
@@ -744,16 +613,10 @@ export function SurveyReportingDashboard({
         />
         <MetricCard
           label="Completado"
-          value={
-            suppression.metricsUnavailable && !aggregateVisible
-              ? 'N/D'
-              : toPercent(progress?.totals.completionRate ?? 0)
-          }
+          value={toPercent(progress?.totals.completionRate ?? 0)}
           helper={
-            suppression.metricsUnavailable && !aggregateVisible
-              ? 'No visible por anonimización del corte seleccionado.'
-              : aggregateOnlyVisible
-                ? 'Mostramos solo el agregado general de la campaña; los cortes por grupo siguen ocultos.'
+            aggregateOnlyVisible
+              ? 'Agregado general de la campaña; los cortes por grupo están ocultos por anonimato.'
               : suppression.metricsArePartial
                 ? 'Calculado solo con segmentos visibles.'
                 : 'Enviados / total visible.'
@@ -933,181 +796,81 @@ export function SurveyReportingDashboard({
         )}
       </article>
 
-      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-semibold text-ink">Exportación de resultados</h2>
-          <button
-            type="button"
-            onClick={() => void refreshExportJobs(groupBy)}
-            disabled={isRefreshingExports}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100"
-          >
-            {isRefreshingExports ? 'Actualizando exportaciones...' : 'Actualizar exportaciones'}
-          </button>
+      {/* Export loading modal */}
+      {isDownloadingExport ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Generando exportación"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand/10">
+              <svg className="h-6 w-6 animate-spin text-brand" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+            </div>
+            <h2 className="text-base font-semibold text-ink">Generando reporte…</h2>
+            <p className="mt-1 text-sm text-slate-500">Esto puede tomar unos segundos.</p>
+          </div>
         </div>
+      ) : null}
 
-        <p className="text-xs text-slate-600">
-          Formatos soportados actualmente: {formatSupportedDashboardExportFormats(exportSupportedFormats)}.
-        </p>
-        {!canManage ? (
-          <p className="text-xs text-slate-500">
-            Solo ADMIN puede crear y descargar exportaciones.
-          </p>
-        ) : null}
-        <p className="text-xs text-slate-500">
-          Última actualización de exportaciones:{' '}
-          {lastExportRefreshAt ? formatBoliviaDateTime(lastExportRefreshAt) : 'Sin registro'}.
-        </p>
-
-        {suppression.metricsArePartial ? (
-          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            {aggregateOnlyVisible
-              ? 'La exportación incluirá el agregado general visible de la campaña, pero no desgloses por grupo suprimidos por anonimato.'
-              : 'La exportación incluye únicamente segmentos visibles según el umbral de anonimato.'}
-          </p>
-        ) : null}
-
-        {exportError ? (
-          <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            <p>{exportError}</p>
+      {/* Export success modal */}
+      {exportDownloadSuccess && !isDownloadingExport ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Reporte descargado"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+              <svg className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-base font-semibold text-ink">¡Reporte descargado!</h2>
+            <p className="mt-1 text-sm text-slate-500">El archivo XLSX se descargó correctamente.</p>
             <button
               type="button"
-              onClick={() => void refreshExportJobs(groupBy)}
-              disabled={isRefreshingExports}
-              className="mt-2 rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-70"
+              onClick={() => setExportDownloadSuccess(false)}
+              className="mt-5 rounded-lg bg-emerald-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
             >
-              Reintentar carga de exportaciones
+              Cerrar
             </button>
           </div>
-        ) : null}
+        </div>
+      ) : null}
 
-        {latestExportJob ? (
-          <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${
-                  exportStatusPresentation[latestExportJob.status].className
-                }`}
-              >
-                {exportStatusPresentation[latestExportJob.status].label}
-              </span>
-              <span className="text-xs text-slate-600">Último job: {latestExportJob.id}</span>
+      {/* Export error modal */}
+      {exportError && !isDownloadingExport ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Error en exportación"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-rose-100">
+              <svg className="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </div>
-            <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
-              <p>
-                <span className="font-medium">Creado:</span> {formatDateTime(latestExportJob.createdAt)}
-              </p>
-              <p>
-                <span className="font-medium">Actualizado:</span>{' '}
-                {formatDateTime(latestExportJob.updatedAt)}
-              </p>
-              <p>
-                <span className="font-medium">Iniciado:</span> {formatDateTime(latestExportJob.startedAt)}
-              </p>
-              <p>
-                <span className="font-medium">Completado:</span>{' '}
-                {formatDateTime(latestExportJob.completedAt)}
-              </p>
-            </div>
-            {latestExportJob.status === 'FAILED' && latestExportJob.errorMessage ? (
-              <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                {latestExportJob.errorMessage}
-              </p>
-            ) : null}
-            {latestExportStatusMessage ? (
-              <p role="status" aria-live="polite" className="text-xs text-slate-600">
-                {latestExportStatusMessage}
-              </p>
-            ) : null}
-            {isDashboardExportDownloadReady(latestExportJob) ? (
-              <a
-                href={resolveDownloadUrl(latestExportJob.downloadUrl) ?? '#'}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-emerald-700"
-              >
-                Descargar último archivo
-              </a>
-            ) : null}
-            {shouldPollExports ? (
-              <p className="text-xs text-slate-500">
-                El estado se actualizará automáticamente cada 5 segundos.
-              </p>
-            ) : null}
+            <h2 className="text-base font-semibold text-ink">Error al exportar</h2>
+            <p className="mt-2 text-sm text-slate-500">{exportError}</p>
+            <button
+              type="button"
+              onClick={() => setExportError(null)}
+              className="mt-5 rounded-lg border border-slate-300 px-5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              Cerrar
+            </button>
           </div>
-        ) : (
-          <p className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-            Aún no se generó un archivo para este filtro. Usa &quot;Exportar XLSX&quot; para iniciar la exportación.
-          </p>
-        )}
+        </div>
+      ) : null}
 
-        {exportJobs.length > 0 ? (
-          <div className="max-h-80 overflow-auto rounded-xl border border-slate-200">
-            <table className="min-w-full text-left text-sm">
-              <thead className="sticky top-0 bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
-                <tr>
-                  <th className="px-3 py-2 font-semibold">Job</th>
-                  <th className="px-3 py-2 font-semibold">Formato</th>
-                  <th className="px-3 py-2 font-semibold">Estado</th>
-                  <th className="px-3 py-2 font-semibold">Intentos</th>
-                  <th className="px-3 py-2 font-semibold">Creado</th>
-                  <th className="px-3 py-2 font-semibold">Completado</th>
-                  <th className="px-3 py-2 font-semibold">Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {exportJobs.map((job) => {
-                  const downloadUrl = resolveDownloadUrl(job.downloadUrl);
-                  const actionLabel =
-                    job.status === 'PENDING'
-                      ? 'En cola'
-                      : job.status === 'PROCESSING'
-                        ? 'Procesando'
-                        : job.status === 'FAILED' && job.nextRetryAt && job.attemptCount < job.maxAttempts
-                          ? `Reintento ${formatDateTime(job.nextRetryAt)}`
-                          : job.status === 'FAILED'
-                            ? 'Fallido'
-                            : 'Sin archivo';
-                  return (
-                    <tr key={job.id}>
-                      <td className="px-3 py-2 text-slate-700">{job.id}</td>
-                      <td className="px-3 py-2 text-slate-700">{job.format}</td>
-                      <td className="px-3 py-2">
-                        <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${
-                            exportStatusPresentation[job.status].className
-                          }`}
-                        >
-                          {exportStatusPresentation[job.status].label}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-slate-700">
-                        {numberFormatter.format(job.attemptCount)} / {numberFormatter.format(job.maxAttempts)}
-                      </td>
-                      <td className="px-3 py-2 text-slate-700">{formatDateTime(job.createdAt)}</td>
-                      <td className="px-3 py-2 text-slate-700">{formatDateTime(job.completedAt)}</td>
-                      <td className="px-3 py-2">
-                        {isDashboardExportDownloadReady(job) && downloadUrl ? (
-                          <a
-                            href={downloadUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100"
-                          >
-                            Descargar
-                          </a>
-                        ) : (
-                          <span className="text-xs text-slate-500">{actionLabel}</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-      </article>
         </>
       ) : null}
     </section>

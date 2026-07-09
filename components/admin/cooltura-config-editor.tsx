@@ -2,11 +2,15 @@
 
 import { useState } from 'react';
 import type { CoolturaConfig, UpsertCoolturaConfigInput } from '@/types/cooltura-config';
-import { upsertCoolturaConfigClient } from '@/services/cooltura-config.client';
+import {
+  sendCoolturaTestEmailClient,
+  upsertCoolturaConfigClient
+} from '@/services/cooltura-config.client';
 import { extractErrorMessage } from '@/lib/auth-shared';
 
 type Props = {
   initialConfig: CoolturaConfig | null;
+  initialTestRecipient: string;
 };
 
 const emptyForm = (): UpsertCoolturaConfigInput => ({
@@ -65,13 +69,17 @@ function Field({ label, value, onChange, type = 'text', placeholder }: FieldProp
   );
 }
 
-export function CoolturaConfigEditor({ initialConfig }: Props) {
+export function CoolturaConfigEditor({ initialConfig, initialTestRecipient }: Props) {
   const [form, setForm] = useState<UpsertCoolturaConfigInput>(() =>
     configToForm(initialConfig)
   );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [testRecipient, setTestRecipient] = useState(initialTestRecipient);
+  const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
+  const [testEmailError, setTestEmailError] = useState<string | null>(null);
+  const [testEmailSuccess, setTestEmailSuccess] = useState<string | null>(null);
 
   const set = <K extends keyof UpsertCoolturaConfigInput>(
     key: K,
@@ -91,6 +99,29 @@ export function CoolturaConfigEditor({ initialConfig }: Props) {
       setError(extractErrorMessage(err));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSendTestEmail = async () => {
+    setIsSendingTestEmail(true);
+    setTestEmailError(null);
+    setTestEmailSuccess(null);
+
+    try {
+      const result = await sendCoolturaTestEmailClient({
+        to: testRecipient
+      });
+
+      setTestEmailSuccess(
+        `Correo enviado a ${result.to} a las ${new Date(result.sentAt).toLocaleTimeString('es-BO', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })}.`
+      );
+    } catch (err) {
+      setTestEmailError(extractErrorMessage(err));
+    } finally {
+      setIsSendingTestEmail(false);
     }
   };
 
@@ -197,6 +228,46 @@ export function CoolturaConfigEditor({ initialConfig }: Props) {
             placeholder="contacto@..."
           />
         </div>
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="mb-2 text-base font-semibold text-ink">Correo de prueba</h2>
+        <p className="mb-4 text-sm text-slate-600">
+          Envía un correo de prueba para verificar que el envío SMTP del panel está funcionando.
+        </p>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="w-full max-w-md">
+            <label className="block text-sm font-medium text-slate-700">
+              Destinatario
+            </label>
+            <input
+              type="email"
+              value={testRecipient}
+              onChange={(event) => {
+                setTestRecipient(event.target.value);
+                setTestEmailError(null);
+                setTestEmailSuccess(null);
+              }}
+              placeholder="correo@empresa.com"
+              className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-ink shadow-sm placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSendTestEmail}
+            disabled={isSendingTestEmail || testRecipient.trim().length === 0}
+            className="rounded-lg border border-slate-300 bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSendingTestEmail ? 'Enviando...' : 'Enviar correo de prueba'}
+          </button>
+        </div>
+
+        {testEmailSuccess ? (
+          <p className="mt-3 text-sm text-emerald-600">{testEmailSuccess}</p>
+        ) : null}
+        {testEmailError ? <p className="mt-3 text-sm text-rose-600">{testEmailError}</p> : null}
       </section>
 
       {/* Footer */}

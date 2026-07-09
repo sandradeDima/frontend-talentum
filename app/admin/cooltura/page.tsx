@@ -22,7 +22,10 @@ export default async function CoolturaConfigPage() {
             Gestiona los enlaces de redes sociales e información de contacto por país.
           </p>
         </header>
-        <CoolturaConfigEditor initialConfig={config} />
+        <CoolturaConfigEditor
+          initialConfig={config}
+          initialTestRecipient={session.user.email}
+        />
       </section>
     );
   } catch (error) {

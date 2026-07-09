@@ -6,8 +6,7 @@ import { extractErrorMessage } from '@/lib/auth-shared';
 import { getCompanyBySlugServer } from '@/services/company.server';
 import {
   getDashboardProgressServer,
-  getDashboardResultsServer,
-  listDashboardExportJobsServer
+  getDashboardResultsServer
 } from '@/services/dashboard.server';
 import { getSurveyCampaignBySlugServer } from '@/services/survey.server';
 import type { DashboardGroupBy } from '@/types/dashboard-reporting';
@@ -73,22 +72,6 @@ export default async function SurveyReportingPage({
         error: extractErrorMessage(error)
       }));
 
-    const exportHistoryResult = await listDashboardExportJobsServer({
-      surveySlug: survey.slug,
-      groupBy: initialGroupBy,
-      limit: 10
-    })
-      .then((result) => ({
-        jobs: result.jobs,
-        supportedFormats: result.supportedFormats,
-        error: null as string | null
-      }))
-      .catch((error) => ({
-        jobs: [],
-        supportedFormats: ['XLSX'] as const,
-        error: extractErrorMessage(error)
-      }));
-
     return (
       <SurveyReportingDashboard
         companySlug={company.slug}
@@ -99,9 +82,6 @@ export default async function SurveyReportingPage({
         initialProgress={reportingResult.progress}
         initialResults={reportingResult.results}
         initialError={reportingResult.error}
-        initialExportJobs={exportHistoryResult.jobs}
-        initialExportSupportedFormats={[...exportHistoryResult.supportedFormats]}
-        initialExportError={exportHistoryResult.error}
       />
     );
   } catch (error) {

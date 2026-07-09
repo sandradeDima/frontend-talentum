@@ -1,3 +1,4 @@
+import { env } from '@/lib/env';
 import { requestApiClient } from '@/lib/api-client-browser';
 import type {
   CreateDashboardExportJobInput,
@@ -63,4 +64,35 @@ export const listDashboardExportJobsClient = async (input: {
   return requestApiClient<DashboardExportJobListResult>(
     `/dashboard/results/export?${query.toString()}`
   );
+};
+
+export const downloadDashboardExportClient = async (input: DashboardQueryInput): Promise<{ blob: Blob; fileName: string }> => {
+  const apiBase = env.backendApiUrl.endsWith('/') ? env.backendApiUrl.slice(0, -1) : env.backendApiUrl;
+  const url = `${apiBase}/dashboard/results/export/download?${buildDashboardQueryString(input)}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    cache: 'no-store'
+  });
+
+  if (!response.ok) {
+    let message = `Error HTTP ${response.status}`;
+    try {
+      const payload = (await response.json()) as { mensaje?: string };
+      if (payload?.mensaje) {
+        message = payload.mensaje;
+      }
+    } catch {
+      // ignore parse errors
+    }
+    throw new Error(message);
+  }
+
+  const blob = await response.blob();
+  const disposition = response.headers.get('Content-Disposition') ?? '';
+  const match = /filename="([^"]+)"/.exec(disposition);
+  const fileName = match?.[1] ?? `reporte-${input.surveySlug}-${input.groupBy.toLowerCase()}.xlsx`;
+
+  return { blob, fileName };
 };
