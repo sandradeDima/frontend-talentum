@@ -67,7 +67,7 @@ export const listDashboardExportJobsClient = async (input: {
 };
 
 export const downloadDashboardExportClient = async (input: DashboardQueryInput): Promise<{ blob: Blob; fileName: string }> => {
-  const apiBase = env.backendApiUrl.endsWith('/') ? env.backendApiUrl.slice(0, -1) : env.backendApiUrl;
+  const apiBase = env.apiUrl.endsWith('/') ? env.apiUrl.slice(0, -1) : env.apiUrl;
   const url = `${apiBase}/dashboard/results/export/download?${buildDashboardQueryString(input)}`;
 
   const response = await fetch(url, {
