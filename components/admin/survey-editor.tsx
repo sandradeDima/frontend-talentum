@@ -948,8 +948,7 @@ export function SurveyEditor({
             placeholder="https://cdn.ejemplo.com/tutorial.mp4"
           />
           <p className="text-xs text-slate-500">
-            Configura una URL directa del video tutorial del respondente. Este campo queda listo
-            para conectarse a una subida de video dedicada cuando se habilite ese endpoint.
+            Configura una URL directa del video tutorial del respondente.
           </p>
         </div>
       </div>

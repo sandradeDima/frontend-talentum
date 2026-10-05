@@ -77,7 +77,7 @@ export function SurveyCampaignList({ companySlug, rows, canManage }: SurveyCampa
                     </a>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2 whitespace-nowrap">
+                    <div className="flex flex-col items-end gap-2 whitespace-nowrap">
                       {canViewResults ? (
                         <Link
                           href={`/admin/companies/${companySlug}/surveys/${survey.slug}/reporting`}

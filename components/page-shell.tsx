@@ -26,11 +26,14 @@ export function PageShell({ title, subtitle, supportConfig = null, children }: P
               className="h-auto w-[180px]"
               priority
             />
-            <p className="auth-kicker mt-10">Back Office Experience</p>
-            <h1 className="auth-title max-w-[12ch]">COOLtura Admin</h1>
+            <p className="auth-kicker mt-10 font-bold">COOLTURA ADMIN</p>
+            <h1 className="auth-title max-w-[18ch] normal-case">
+              La cultura también se gestiona con datos.
+            </h1>
             <p className="auth-subtitle">
-              Un acceso unificado para operar encuestas, empresas y usuarios dentro de la misma
-              experiencia premium que vive cada participante.
+              Centraliza la gestión de tus evaluaciones, acompaña la participación y convierte las
+              percepciones de las personas en información para comprender y fortalecer la cultura
+              organizacional.
             </p>
           </section>
 

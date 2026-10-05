@@ -194,7 +194,7 @@ export default async function AdminSurveysPage({ searchParams }: AdminSurveysPag
                         />
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex flex-col items-end gap-2 whitespace-nowrap">
                           {canViewResults ? (
                             <Link
                               href={`/admin/companies/${row.company.slug}/surveys/${row.slug}/reporting`}
